@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "learn_react_native",
-    "slug": "learn_react_native",
+    "name": "geo_attendance_system_app",
+    "slug": "geo_attendance_system_app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
