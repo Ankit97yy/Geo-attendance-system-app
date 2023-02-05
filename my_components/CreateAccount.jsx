@@ -15,21 +15,13 @@ export default function CreateAccount({ navigation }) {
 
 
   const register = (val) => {
-    Axios.post('http://192.168.29.133:3001/register', {
+    console.log("create account");
+    navigation.navigate("JoinOrRegister", {
       name: val.name,
       email: val.email,
       password: val.password
-    }
-    )
-      .then((res) => {
-        if (res.data.userExist) alert("user already exists")
-        else {
-          navigation.navigate("JoinOrRegister")
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      })
+    })
+
   }
   return (
     <Formik
