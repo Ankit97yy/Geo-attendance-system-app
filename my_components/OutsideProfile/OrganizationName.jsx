@@ -3,7 +3,7 @@ import { Button, TextInput, View, Text, TouchableOpacity } from 'react-native'
 import { object, string, number } from 'yup'
 import { Formik } from 'formik'
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-
+import Axios from 'axios'
 
 export default function OrganizationName({ route }) {
   const [start_time, setstarttime] = useState('')
@@ -38,7 +38,7 @@ export default function OrganizationName({ route }) {
   })
 
   function register(val) {
-    Axios.post('http://192.168.148.4:3001/register', {
+    Axios.post('http://192.168.148.4:3001/auth/register', {
       ...route.params, ...val
     })
       .then((res) => {

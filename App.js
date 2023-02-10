@@ -1,5 +1,5 @@
 import { NavigationContainer } from '@react-navigation/native';
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect} from 'react';
 import { signedInContext } from './contexts/SignedInContext';
 import Profile from './my_components/Profile';
 import OutsideOfProfile from './my_components/OutsideProfile/OutsideOfProfile';

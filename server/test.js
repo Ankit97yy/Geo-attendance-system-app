@@ -5,7 +5,7 @@ async function hash() {
         console.log("one");
         const hash = await argon2.hash("as")
         console.log("two");
-        // return hash;
+        return hash;
     } catch (error) {
         console.log(error);
     }

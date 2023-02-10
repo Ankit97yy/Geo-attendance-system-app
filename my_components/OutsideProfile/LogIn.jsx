@@ -24,15 +24,16 @@ export default function LogIn() {
 
   const { setisSignedIn } = useContext(signedInContext)
   const login = (val) => {
-    Axios.post('http://192.168.148.4:3001/login', {
+    Axios.post('http://192.168.148.4:3001/auth/login', {
       email: val.email,
       password: val.password
     }
     )
       .then((res) => {
         if (res.data.canLogIn) {
-          setisSignedIn(true);
-          isSignedInStore('true')
+          console.log(res.data);
+          // setisSignedIn(true);
+          // isSignedInStore('true')
         }
         else console.log("email or password is incorrect")
       })
