@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LogIn() {
 
+  const { setisSignedIn } = useContext(signedInContext)
   const isSignedInStore = async (value) => {
     try {
       await AsyncStorage.setItem('isSignedIn', value)
@@ -22,7 +23,6 @@ export default function LogIn() {
     password: string().required().min(4).label("Password"),
   })
 
-  const { setisSignedIn } = useContext(signedInContext)
   const login = (val) => {
     Axios.post('http://192.168.148.4:3001/auth/login', {
       email: val.email,

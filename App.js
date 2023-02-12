@@ -5,6 +5,8 @@ import Profile from './my_components/Profile';
 import OutsideOfProfile from './my_components/OutsideProfile/OutsideOfProfile';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View } from 'react-native';
+import dotenv from 'dotenv';
+dotenv.config()
 
 export default function App() {
   const [isSignedIn, setisSignedIn] = useState(null)
@@ -46,7 +48,6 @@ export default function App() {
         }
       </signedInContext.Provider>
     </NavigationContainer>
-    // <GetCurrentLocation/>
 
   )
 };
