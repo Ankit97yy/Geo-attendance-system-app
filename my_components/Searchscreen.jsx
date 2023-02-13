@@ -17,7 +17,7 @@ export default function SearchScreen() {
         return (
             <TouchableHighlight onPress={() => console.log(id)} underlayColor='#ddd'>
     
-                <Text style={{ fontSize: 20, marginBottom: 10 }}>{title}</Text>
+                <Text style={{ fontSize: 20, marginBottom: 10,borderBottomWidth:1,borderBottomColor:'#000' }}>{title}</Text>
             </TouchableHighlight>
         )
     }
@@ -35,7 +35,7 @@ export default function SearchScreen() {
                     
                 }}
                 keyExtractor={item => item.id}
-                ItemSeparatorComponent={() => <View style={{ backgroundColor: "#000", width: '100%', height: 1 }}></View>}
+                // ItemSeparatorComponent={() => <View style={{ backgroundColor: "#000", width: '100%', height: 1 }}></View>}
             />
         </View>
     )

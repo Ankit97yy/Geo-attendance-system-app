@@ -10,7 +10,7 @@ export function verifyToken(req, res, next){
         }
     
         let token=authHeader && authHeader.split(' ')[1]
-        const verified = Jwt.verify(token, process.env.JWT_SECRET,);
+        const verified = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         console.log(verified);
         req.user = verified;
         next();

@@ -39,13 +39,11 @@ function loginUser(req, res) {
             verifyHash(result[0].password, password).then((verified) => {
                 if (verified) {
                     const accessToken = Jwt.sign({ id: result[0].id }, process.env.ACCESS_TOKEN_SECRET)
-                    res.json({ canLogIn: true,accessToken:accessToken })
+                    res.send({ canLogIn: true,accessToken:accessToken })
                 }
                 else
                     res.send({ canLogIn: false })
             })
-        
-        // console.log(result[0].password);
         }
         else {
             res.send({ canLogIn: false })
@@ -54,7 +52,6 @@ function loginUser(req, res) {
             // res.send({message:"enter correct details"})
             console.log("database ot nuhumal",err);
         }
-        // console.log(result[0].password);
     })
 }
 module.exports={loginUser,registerUser}

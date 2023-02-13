@@ -5,17 +5,16 @@ import { Button, TextInput, View, StyleSheet, Text } from 'react-native';
 import Axios from 'axios';
 import { useContext } from 'react';
 import { signedInContext } from '../../contexts/SignedInContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import {SECRET_KEY} from '@env'
+import loginSuccModal from './LoginSuccModal';
 
 export default function LogIn() {
 
   const { setisSignedIn } = useContext(signedInContext)
-  const isSignedInStore = async (value) => {
-    try {
-      await AsyncStorage.setItem('isSignedIn', value)
-    } catch (e) {
-      console.log(e);
-    }
+
+  async function saveToken(key, value) {
+    await SecureStore.setItemAsync(key, value);
   }
 
   const validationScheme = object({
@@ -29,11 +28,12 @@ export default function LogIn() {
       password: val.password
     }
     )
-      .then((res) => {
+     .then((res) => {
         if (res.data.canLogIn) {
-          console.log(res.data);
+          console.log(res.data.accessToken);
+          return <loginSuccModal/>
+          // saveToken(SECRET_KEY, res.data.accessToken)
           // setisSignedIn(true);
-          // isSignedInStore('true')
         }
         else console.log("email or password is incorrect")
       })
