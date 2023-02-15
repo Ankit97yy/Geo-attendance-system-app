@@ -1,35 +1,29 @@
-const argon2 = require('argon2')
+const { string } = require('yup');
+const {createHash} =require('../server/hashFunction.js')
 
-async function hash() {
+async function hash(){
     try {
-        console.log("one");
-        const hash = await argon2.hash("as")
-        console.log("two");
-        return hash;
+       let delhiweather= new Promise((resolve,reject)=>{
+        setTimeout(()=>{
+            reject("delhieather is 21");
+        },2000)
+       })
+       let bangaloreweather= new Promise((resolve,reject)=>{
+        setTimeout(()=>{
+            resolve("delhi weather is 23");
+        },8000)
+       })
+
+    //    delhiweather.then((res)=>console.log(res)).catch((err)=>console.log(err))
+    //    console.log("oiii");
+    //    bangaloreweather.then((res)=>console.log(res))
+    let dw= await delhiweather;
+    console.log(dw);
+    let bw= await bangaloreweather;
+        
     } catch (error) {
         console.log(error);
     }
 }
-hash().then(res=>console.log(res));
-console.log("last");
-
-// async function verify(hashed){
-//     try {
-//         console.log("three");
-//         if (await argon2.verify(hashed, "as")) {
-//             console.log("four");
-//           return true;
-//         } else {
-//             return false;
-//         }
-
-//       } catch (err) {
-//         // internal failure
-//       }
-// }
-// hash().then(hashed=>{
-//     verify(hashed).then((res)=>{
-//         if(res) console.log("match");
-//         else console.log("not match");
-//     })
-// })
+hash()
+console.log("hahaha");
