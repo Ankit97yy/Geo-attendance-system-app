@@ -8,7 +8,6 @@ import * as SecureStore from 'expo-secure-store';
 import {SECRET_KEY} from "@env"
 import SearchScreen from './my_components/Searchscreen';
 import LoginSuccModal from './my_components/OutsideProfile/LoginSuccModal';
-import OrganizationName from './my_components/OutsideProfile/OrganizationName';
 
 export default function App() {
   const [isSignedIn, setisSignedIn] = useState(null)

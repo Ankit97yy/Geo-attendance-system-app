@@ -3,19 +3,25 @@ const Jwt = require("jsonwebtoken");
 require("dotenv").config();
 const db = require("../database.js");
 
+function getDateTime(){
+  const now = new Date();
+const year = now.getFullYear();
+const month = String(now.getMonth() + 1).padStart(2, '0');
+const day = String(now.getDate()).padStart(2, '0');
+const hour = String(now.getHours()).padStart(2, '0');
+const minute = String(now.getMinutes()).padStart(2, '0');
+const second = String(now.getSeconds()).padStart(2, '0');
+return`${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
 async function registerUser(req, res) {
   const {
     name,
     email,
     password,
-    organizationName,
     latitude,
     longitude,
-    start_time,
-    end_time,
     location_name,
-    branch_location_id,
-    organization_id,
     is_admin,
   } = req.body;
   console.log(
@@ -32,7 +38,7 @@ async function registerUser(req, res) {
     req.body
   );
   const [result] = await db.execute(
-    "select `email` from `users` where `email`=?",
+    "select `email` from `employees` where `email`=?",
     [email]
   );
   if (result.length > 0) {
@@ -40,40 +46,21 @@ async function registerUser(req, res) {
     res.send({ userExist: true });
   } else {
     try {
-      if(is_admin==="no"){
-        const hashed = await createHash(password);
-        const [user] = await db.execute(
-          "INSERT INTO users (full_name, email, password,organization_id,branch_location_id,is_admin) values(?,?,?,?,?,?)",
-          [
-            name,
-            email,
-            hashed,
-            organization_id,
-            branch_location_id,
-            is_admin,
-          ]
-        );
-  
-      }
-      const [orgResult] = await db.execute(
-        "INSERT INTO organizations(organization_name,start_time,end_time) VALUES(?,?,?)",
-        [organizationName, start_time, end_time]
-      );
       const [branchResult] = await db.execute(
-        "INSERT INTO branch_locations(longitude,latitude,location_name,organization_id) VALUES(?,?,?,?)",
-        [longitude, latitude, location_name, orgResult.insertId]
+        "INSERT INTO branch_locations(latitude,longitude,location_name,created_time) VALUES(?,?,?,?)",
+        [longitude, latitude, location_name,getDateTime()]
       );
 
       const hashed = await createHash(password);
       const [user] = await db.execute(
-        "INSERT INTO users (full_name, email, password,organization_id,branch_location_id,is_admin) values(?,?,?,?,?,?)",
+        "INSERT INTO employees (full_name, email, password,branch_location_id,is_admin,created_time) values(?,?,?,?,?,?)",
         [
           name,
           email,
           hashed,
-          orgResult.insertId,
           branchResult.insertId,
           is_admin,
+          getDateTime()
         ]
       );
 

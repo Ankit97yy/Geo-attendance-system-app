@@ -1,29 +1,11 @@
-const { string } = require('yup');
-const {createHash} =require('../server/hashFunction.js')
-
-async function hash(){
-    try {
-       let delhiweather= new Promise((resolve,reject)=>{
-        setTimeout(()=>{
-            reject("delhieather is 21");
-        },2000)
-       })
-       let bangaloreweather= new Promise((resolve,reject)=>{
-        setTimeout(()=>{
-            resolve("delhi weather is 23");
-        },8000)
-       })
-
-    //    delhiweather.then((res)=>console.log(res)).catch((err)=>console.log(err))
-    //    console.log("oiii");
-    //    bangaloreweather.then((res)=>console.log(res))
-    let dw= await delhiweather;
-    console.log(dw);
-    let bw= await bangaloreweather;
-        
-    } catch (error) {
-        console.log(error);
-    }
+function getdatetime(){const now = new Date();
+const year = now.getFullYear();
+const month = String(now.getMonth() + 1).padStart(2, '0');
+const day = String(now.getDate()).padStart(2, '0');
+const hour = String(now.getHours()).padStart(2, '0');
+const minute = String(now.getMinutes()).padStart(2, '0');
+const second = String(now.getSeconds()).padStart(2, '0');
+return`${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }
-hash()
-console.log("hahaha");
+
+console.log( getdatetime())

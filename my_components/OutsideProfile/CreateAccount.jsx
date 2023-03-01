@@ -3,7 +3,6 @@ import React from 'react'
 import { View, StyleSheet, Text, TextInput, Button } from 'react-native'
 import { object, ref, string } from 'yup'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import Axios from 'axios'
 
 export default function CreateAccount({ navigation }) {
   const validationScheme = object({
@@ -15,7 +14,7 @@ export default function CreateAccount({ navigation }) {
 
 
   const register = (val) => {
-    navigation.navigate("JoinOrRegister", {
+    navigation.navigate("RegisterOrganization", {
       name: val.name,
       email: val.email,
       password: val.password
