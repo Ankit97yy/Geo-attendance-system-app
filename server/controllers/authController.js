@@ -2,17 +2,8 @@ const { createHash, verifyHash } = require("../hashFunction.js");
 const Jwt = require("jsonwebtoken");
 require("dotenv").config();
 const db = require("../database.js");
+const {getDateTime}= require('../dateTimeFunctions.js')
 
-function getDateTime(){
-  const now = new Date();
-const year = now.getFullYear();
-const month = String(now.getMonth() + 1).padStart(2, '0');
-const day = String(now.getDate()).padStart(2, '0');
-const hour = String(now.getHours()).padStart(2, '0');
-const minute = String(now.getMinutes()).padStart(2, '0');
-const second = String(now.getSeconds()).padStart(2, '0');
-return`${year}-${month}-${day} ${hour}:${minute}:${second}`;
-}
 
 async function registerUser(req, res) {
   const {
