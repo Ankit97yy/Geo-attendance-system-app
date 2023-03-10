@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Text, View } from 'react-native'
 import { useContext } from 'react'
-import { signedInContext } from '../contexts/SignedInContext'
+import { signedInContext } from '../../contexts/SignedInContext'
 import * as SecureStore from 'expo-secure-store';
 import { SECRET_KEY } from "@env"
 
