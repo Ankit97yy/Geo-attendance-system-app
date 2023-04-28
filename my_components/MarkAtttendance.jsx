@@ -1,53 +1,301 @@
-import { View, Text,StyleSheet } from 'react-native'
-import React,{useState} from 'react'
-import MapView, { Marker } from 'react-native-maps';
-import { Button, Modal, Portal } from 'react-native-paper';
-import Lottie from 'lottie-react-native';
+import { initialState } from "../hooks/LocationHook";
+import { locationReducer } from "../hooks/LocationHook";
+import { View, Text, StyleSheet, Image } from "react-native";
+import * as Location from "expo-location";
+import React, { useEffect, useReducer } from "react";
+import MapView, { Marker } from "react-native-maps";
+import { Button, FAB, Modal, Portal } from "react-native-paper";
+import Lottie from "lottie-react-native";
+import haversine from "./test";
+import moment from "moment/moment";
+import axios from "axios";
 
 export default function MarkAtttendance() {
-  const [visible, setvisible] = useState(false)
-  const showModal=()=>setvisible(true)
-  const hideModal=()=>setvisible(false)
+  const [state, dispatch] = useReducer(locationReducer, initialState);
+
+  const handlePunchIn = () => {
+    axios
+      .post("attendance/addAttendance")
+      .then((res) => {
+        if (res.data.attendance) dispatch({ type: "handlePunchIn" });
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const handlePunchOut = () => {
+    axios
+      .post("attendance/addAttendance")
+      .then((res) => {
+        if (res.data.attendance) dispatch({ type: "handlePunchOut" });
+      })
+      .catch((err) => console.log(err));
+  };
+
+  useEffect(() => {
+    dispatch({type:"checkTime",payload:{startTime:'09:30:00',endTime:'18:30:00'}})
+    axios
+      .get("/attendance/getTodayAttendanceOfAnEmployee")
+      .then((res) => {
+        if (res.data.length > 0) {
+          console.log(res.data,"nanananana")
+          if (res.data[0].in_time !== null){
+            dispatch({ type: "donePunchedIn", payload: true });
+          }
+          if (res.data[0].out_time !== null){
+            console.log("donePunchedOut~~~~~~~~`",res.data[0].out_time)
+            dispatch({ type: "donePunchedOut", payload: true });
+          }
+        }
+      })
+      .catch((err) => console.log(err));
+
+    axios
+      .get("/leave/getOngoingLeave")
+      .then((res) => {
+        if (res.data.onLeave) dispatch({ type: "onLeave", payload: true });
+        else dispatch({ type: "onLeave", payload: false });
+      })
+      .catch((err) => console.log(err, "kakak"));
+  }, []);
+
+  useEffect(() => {
+    let timeId;
+    (async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.log("Permission to access location was denied");
+          return;
+        }
+        let locations = await Location.getCurrentPositionAsync();
+        console.log(
+          "🚀 ~ file: MarkAtttendance.jsx:83 ~ location:",
+          locations
+        );
+        dispatch({
+          type: "location",
+          payload: locations,
+        });
+
+        timeId = setInterval(async () => {
+          console.log("fired")
+          let locations = await Location.getCurrentPositionAsync();
+          console.log(
+            "🚀 ~ file: MarkAtttendance.jsx:83 ~ location:",
+            locations
+          );
+          dispatch({
+            type: "location",
+            payload: locations,
+          });
+        }, 3000);
+
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+    return () =>{
+      console.log("cleaned")
+      console.log(timeId,"clear time")
+      clearInterval(timeId)
+    };
+  }, [state.render]);
+
+  useEffect(() => {
+    if (state.canMarkAttendance()) {
+      const distance = haversine(
+        state.currentLocation.coords.latitude,
+        state.currentLocation.coords.longitude,
+        26.138243,
+        91.799387
+      );
+      console.log(
+        "🚀 ~ file: MarkAtttendance.jsx:86 ~ useEffect ~ distance:",
+        distance
+      );
+      if (distance <= 100) {
+        if (!state.donePunchedIn)
+          dispatch({ type: "enablePunchIn", payload: true });
+       else if (!state.donePunchedOut)
+          dispatch({ type: "enablePunchOut", payload: true });
+      } else {
+        dispatch({ type: "enablePunchIn", payload: false });
+        dispatch({ type: "enablePunchOut", payload: false });
+      }
+    }
+  }, [
+    state.currentLocation,
+    state.onLeave,
+    state.donePunchedIn,
+    state.donePunchedOut,
+  ]); //! dependency array is an object!!!
+
+  let message;
+  if (state.onLeave) 
+  message = <Text style={{ fontSize: 18 }}>On leave</Text>;
+  else if (state.punchIn || state.punchOut)
+  message = <Text style={{ fontSize: 18 }}>You are inside</Text>;
+  else if (state.donePunchedIn && state.donePunchedOut)
+  message = <Text style={{ fontSize: 18 }}>You have marked your attendance</Text>
+  else if(!state.inTime) message= <Text style={{ fontSize: 18 }}>You can mark attendance only in office hours</Text>;
+  else message= <Text style={{ fontSize: 18 }}>You are outside</Text>;
+
+  // if (!currentLocation) {
+  //   return (
+  //     <>
+  //       <View
+  //         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+  //       >
+  //         <Text style={{ fontWeight: "bold",fontSize:20 }}>Reloading.....</Text>
+  //       </View>
+  //       <FAB
+  //         style={{ position: "absolute",bottom:40,right:16 }}
+  //         icon="reload"
+  //         onPress={() => setrender(!render)}
+  //       />
+  //     </>
+  //   );
+  // }
+  const CustomMarker = ({ avatar }) => {
+    return (
+      <View style={styles.markerContainer}>
+        <Image
+          source={require("../assets/pin.png")}
+          style={styles.markerImage}
+        />
+        <Image
+          source={require("../assets/kk.jpg")}
+          style={styles.avatarImage}
+        />
+      </View>
+    );
+  };
   return (
-    <View style={styles.container}>
-          <MapView style={styles.map}
-    initialRegion={{
-      latitude: 26.138219,
-      longitude: 91.800023,
-      latitudeDelta: 0.0062,
-      longitudeDelta: 0.0061,
-    }}
-  >
-<Marker coordinate={{
-      latitude: 26.138219,
-      longitude: 91.800023,
-}}
-        title={"you are here"}
+    <>
+      <FAB
+        style={{ position: "absolute", bottom: 40, right: 16 }}
+        icon="reload"
+        onPress={() => dispatch({ type: "render" })}
+      />
+      <View style={styles.container}>
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: state.currentLocation.coords.latitude,
+            longitude: state.currentLocation.coords.longitude,
+            latitudeDelta: 0.0122,
+            longitudeDelta: 0.0121,
+          }}
+          region={{
+            latitude: state.currentLocation.coords.latitude,
+            longitude: state.currentLocation.coords.longitude,
+            latitudeDelta: 0.0122,
+            longitudeDelta: 0.0121,
+          }}
+        >
+          {state.showMarker ? (
+            <Marker
+              coordinate={{
+                latitude: state.currentLocation.coords.latitude,
+                longitude: state.currentLocation.coords.longitude,
+              }}
+              // image={require("../assets/kk.jpg")}
+              pin
+            >
+              <CustomMarker />
+            </Marker>
+          ) : null}
+        </MapView>
+        <View
+          style={{ justifyContent: "center", alignItems: "center", top: 30 }}
+        >
+          <Text style={{ color: "grey", fontSize: 17 }}>
+            {moment().format("DD MMMM YYYY | h:mm a")}
+          </Text>
+          {/* {state.onLeave ? (
+            <Text style={{ fontSize: 18 }}>You are on Leave</Text>
+          ) : (
+            <Text style={{ fontSize: 18 }}>
+              {state.punchIn
+                ? "You are inside of the region"
+                : "You are outside of the region"}
+            </Text>
+          )} */}
+          <Text>{message}</Text>
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            marginTop: 70,
+          }}
+        >
+          <Button
+            disabled={!state.punchIn}
+            style={{ width: "45%", padding: 5 }}
+            mode="contained"
+            onPress={handlePunchIn}
+            buttonColor="#083efd"
+          >
+            punch in
+          </Button>
+          <Button
+            buttonColor="#083efd"
+            style={{ width: "45%", padding: 5 }}
+            mode="contained"
+            disabled={!state.punchOut}
+            onPress={handlePunchOut}
+          >
+            punch out
+          </Button>
+        </View>
 
-/>
-
-  </MapView>
-  <View style={{flexDirection:'row',justifyContent:'space-around',marginTop:10}}>
-  <Button disabled={false} style={{width:'45%'}} mode='contained' onPress={showModal}>Punch in</Button>
-  <Button disabled={true} style={{width:'45%'}} mode='contained'>Punch Out</Button>
-  </View>
-  <Portal>
-    <Modal visible={visible} onDismiss={hideModal} dismissable={true} contentContainerStyle={{}} >
-      <Lottie resizeMode='contained' style={{width:300,left:20,bottom:10}} source={require('../assets/676-done.json')} autoPlay loop={false} speed={1.5} onAnimationFinish={hideModal}/>
-      {/* <Text style={{textAlign:'center',fontSize:20}}>Attendance marked succesfully</Text> */}
-    </Modal>
-  </Portal>
-    </View>
-  )
+        <Portal>
+          <Modal
+            visible={state.visible}
+            onDismiss={() => dispatch({ type: "hideModal" })}
+            dismissable={true}
+            contentContainerStyle={{}}
+          >
+            <Lottie
+              resizeMode="contained"
+              style={{ width: 300, left: 20, bottom: 10 }}
+              source={require("../assets/676-done.json")}
+              autoPlay
+              loop={false}
+              speed={1.5}
+              onAnimationFinish={() => dispatch({ type: "hideModal" })}
+            />
+            {/* <Text style={{textAlign:'center',fontSize:20}}>Attendance marked succesfully</Text> */}
+          </Modal>
+        </Portal>
+      </View>
+    </>
+  );
 }
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   map: {
-    width: '100%',
-    height: '80%',
+    width: "100%",
+    height: "50%",
+  },
+  markerContainer: {
+    alignItems: "center",
+  },
+  markerImage: {
+    width: 70,
+    height: 78,
+  },
+  avatarImage: {
+    width: 33,
+    height: 34,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: "#fff",
+    position: "absolute",
+    bottom: 30,
   },
 });

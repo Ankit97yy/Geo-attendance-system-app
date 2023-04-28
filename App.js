@@ -1,79 +1,85 @@
-import { NavigationContainer } from '@react-navigation/native';
-import React, { useState, useEffect,use} from 'react';
-import { useFonts } from 'expo-font';
-import { signedInContext } from './contexts/SignedInContext';
-import Profile from './my_components/Profile';
-import OutsideOfProfile from './my_components/OutsideProfile/OutsideOfProfile';
-import { ActivityIndicator, View } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
-import * as SecureStore from 'expo-secure-store';
-import {SECRET_KEY} from "@env"
-import { MD3LightTheme,Provider as PaperProvider } from 'react-native-paper';
-import AppHeader from './my_components/AppHeader';
+import { NavigationContainer } from "@react-navigation/native";
+import React, { useState, useEffect, use } from "react";
+import { useFonts } from "expo-font";
+import { userDataContext } from "./contexts/SignedInContext";
+import Profile from "./my_components/Profile";
+import OutsideOfProfile from "./my_components/OutsideProfile/OutsideOfProfile";
+import { ActivityIndicator, View } from "react-native";
+import * as SplashScreen from "expo-splash-screen";
+import * as SecureStore from "expo-secure-store";
+import { SECRET_KEY } from "@env";
+import { MD3LightTheme, Provider as PaperProvider } from "react-native-paper";
+import 'intl';
+import 'intl/locale-data/jsonp/en';
+// import AppHeader from './my_components/AppHeader';
 
 export default function App() {
-  const [isSignedIn, setisSignedIn] = useState(true)
-  // useEffect(() => {
-  //   async function getToken(key) {
-  //     let result = await SecureStore.getItemAsync(key);
-  //     if (result) {
-  //       console.log(result);
-  //     setisSignedIn(true)
-  //     } 
-  //     else {
-  //       console.log('No values stored under that key.');
-  //       setisSignedIn(false)
-  //     }
-  //   }
-  //   getToken(SECRET_KEY)
-  // }, [])
-
+  const [userData, setuserData] = useState({
+    fullName: "",
+    id: null,
+    branch_location_id: null,
+    isSignedIn: false,
+    accessToken:null
+  });
+  useEffect(() => {
+    async function getToken(key) {
+      let result = await SecureStore.getItemAsync(key);
+      if (result) {
+        console.log(result);
+        setuserData((prev) => {
+          return { ...prev,accessToken:result, isSignedIn: true };
+        });
+      } else {
+        console.log("No values stored under that key.");
+        setuserData((prev) => {
+          return { ...prev, isSignedIn: false };
+        });
+      }
+    }
+    getToken(SECRET_KEY);
+  }, []);
 
   const [fontsLoaded] = useFonts({
-    'Inter-Black': require('./assets/fonts/InterDesktop/Inter-Regular.otf'),
-    'Inter-Medium': require('./assets/fonts/InterDesktop/Inter-Medium.otf'),
+    "Inter-Black": require("./assets/fonts/InterDesktop/Inter-Regular.otf"),
+    "Inter-Medium": require("./assets/fonts/InterDesktop/Inter-Medium.otf"),
   });
 
-  async function loadfont(){
+  async function loadfont() {
     if (fontsLoaded) {
       await SplashScreen.hideAsync();
     }
   }
-loadfont();
+  loadfont();
   if (!fontsLoaded) {
     return null;
   }
 
-   const theme={
+  const theme = {
     ...MD3LightTheme,
-    roundness:3,
+    roundness: 3,
     colors: {
       ...MD3LightTheme.colors,
-    
+      primary:'navy'
     },
   };
 
-  if(isSignedIn===null) return <ActivityIndicator animating={true} />
+  if (userData.isSignedIn === null) return <ActivityIndicator animating={true} />;
 
   return (
     <NavigationContainer>
-      <signedInContext.Provider value={{ isSignedIn, setisSignedIn}}>
+      <userDataContext.Provider value={{userData, setuserData }}>
         <PaperProvider theme={theme}>
-
-        {isSignedIn ?
-          <>
-          <AppHeader/>
-            <Profile />
-          </>
-            
-            :
+          {userData.isSignedIn ? (
+            <>
+              <Profile />
+              {/* <ApplyLeave/> */}
+            </>
+          ) : (
             <OutsideOfProfile />
-          }
-          </PaperProvider>
-      </signedInContext.Provider>
+          )}
+        </PaperProvider>
+      </userDataContext.Provider>
     </NavigationContainer>
     // <OrganizationName/>
-    
-  )
-};
-
+  );
+}

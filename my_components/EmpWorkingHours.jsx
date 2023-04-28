@@ -43,12 +43,17 @@ export default function EmpWorkingHours() {
 
   return (
   <Provider>
-    <Appbar.Header>
+    <Appbar.Header
+    style={{
+      borderRadius: 1,
+      borderWidth: 0.1,
+      height: 55,
+    }}>
       <Avatar.Text label="AKD" size={38} style={{marginLeft:5}}/>
       <View style={{flex:1,flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginHorizontal:5}}>
       <View>
-      <Text style={{ fontSize: 20 }}>Arijeet Kumar Das</Text>
-      <Text>Branch: Paltan Bazaar</Text>
+      <Text style={{ fontSize: 20,fontFamily:'Inter-Black' }}>Arijeet Kumar Das</Text>
+      <Text style={{color:'grey'}}>Paltan Bazaar</Text>
       </View>
       <MaterialCommunityIcons name="pencil" size={25}/>
       </View>
@@ -62,9 +67,10 @@ export default function EmpWorkingHours() {
           // height:300
         }}
       >
+
         <View style={{flexDirection:'row',justifyContent:'space-between',marginHorizontal:10}}>
         <Text style={{fontSize:18,fontFamily:'Inter-Medium',top:10}}>Working Hours</Text>
-        <Button mode="outlined" style={{ alignSelf: "center" }}>
+        <Button style={{ alignSelf: "center" }}>
           Select Week
         </Button>
         </View>
@@ -115,12 +121,16 @@ export default function EmpWorkingHours() {
           </Text>
           <View>
             <VictoryPie
-              colorScale={["tomato", "navy"]}
+              colorScale={["tomato", "navy","orange"]}
               labels={() => ""}
               data={data2}
               innerRadius={40}
               padAngle={3}
               width={200}
+               animate={{
+              duration: 2000,
+              onLoad: { duration: 1000 },
+            }}
               origin={{ x: 75 }}
               // height={100}
               />

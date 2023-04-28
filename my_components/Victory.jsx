@@ -1,24 +1,84 @@
-import { React, useCallback } from "react";
-import { StyleSheet, View, Text, ScrollView } from "react-native";
-import { VictoryPie, VictoryChart, VictoryTheme } from "victory-native";
+import { React, useContext, useRef, useState } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  FlatList,
+} from "react-native";
+import * as SecureStore from "expo-secure-store";
+// import { SafeAreaView, FlatList, StatusBar } from "react-native";
+import { Chip, List, Surface } from "react-native-paper";
+import { Dimensions } from "react-native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import Good from "./Good";
-import AttendanceList from "./AttendanceList";
-import Hello from "./Hello";
 import { Button } from "react-native-paper";
-const data1 = [
-  { x: "Present", y: 78 },
-  { x: "Absent", y: 20 },
-  { x: "On leave", y: 2 },
-];
-const data2 = [
-  { x: "leaves taken", y: 78 },
-  { x: "remaining", y: 20 },
-];
+import AppHeader from "./AppHeader";
+import { SECRET_KEY } from "@env";
+import { userDataContext } from "../contexts/SignedInContext";
 
 SplashScreen.preventAutoHideAsync();
-export default function Vict({navigation}) {
+export default function Vict({ navigation }) {
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const SCREEN_WIDTH = Dimensions.get("window").width;
+  const MONTH_WIDTH = 50;
+
+  const { setuserData } = useContext(userDataContext);
+  const scrollViewRef = useRef();
+
+  const months = [
+    "January",
+    "february",
+    "march",
+    "April",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+  ];
+
+  const Item = ({ title }) => (
+    <View>
+      <Button
+        onPress={() => setSelectedMonth(title)}
+        labelStyle={{
+          fontWeight: selectedMonth === title ? "bold" : "normal",
+          textDecorationLine: selectedMonth === title ? "underline" : "none",
+          fontSize: selectedMonth === title ? 17 : 15,
+        }}
+      >
+        {title}
+      </Button>
+    </View>
+  );
+
+  const MyComponent = () => (
+    // <List.Item
+    //   title="First Item"
+    //   description="Item description"
+    //   left={props => <List.Icon {...props} icon="folder" />}
+    // />
+    <Surface style={{ height: 100, marginBottom: 15,flexDirection:'row',alignItems:'center',justifyContent:'space-around' }}>
+      <View style={{backgroundColor:'',justifyContent:'center',width:50,alignItems:'center'}}>
+        <Text style={{fontSize:17,fontWeight:"bold"}}>06</Text>
+        <Text style={{fontSize:17,fontWeight:"bold"}}>Sun</Text>
+      </View>
+        <View style={{}}>
+          <Text style={{fontSize:17,alignSelf:'center'}}>09:00 am</Text>
+          <Chip style={{}} mode="outlined" icon="clock-in">Punch In</Chip>
+      </View>
+        <View style={{justifyContent:'center'}}>
+          <Text style={{fontSize:17,alignSelf:'center'}}>12:09 pm</Text>
+          <Chip mode="outlined" icon="clock-out">Punch Out</Chip>
+      </View>
+    </Surface>
+  );
+
   const [fontsLoaded] = useFonts({
     "Inter-Black": require("../assets/fonts/InterDesktop/Inter-Medium.otf"),
   });
@@ -33,152 +93,68 @@ export default function Vict({navigation}) {
     return null;
   }
 
+  const handLogout = async () => {
+    await SecureStore.deleteItemAsync(SECRET_KEY);
+    setuserData((prev) => {
+      return {
+        fullName: "",
+        id: null,
+        branch_location_id: null,
+        isSignedIn: false,
+        accessToken: null,
+      };
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <ScrollView>
-        <View style={styles.chart}>
-          <Text
-            style={{
-              fontSize: 14,
-              color: "black",
-              fontFamily: "Inter-Medium",
-              // bottom: 137,
-              left:10,
-              position: "absolute",
-              marginLeft: 26,
-              // fontWeight:'bold'
-            }}
-          >
-            Attendance
-          </Text>
-          <View>
-            <VictoryPie
-              colorScale={["navy", "tomato", "orange"]}
-              labels={()=>""}
-              data={data1}
-              innerRadius={40}
-              padAngle={3}
-              width={200}
-              origin={{ x: 75 }}
-              style={{
-                labels: {
-                  fill: "black",
-                  fontSize: 16,
-                  fontWeight: "bold",
-                },
-              }}
+      <AppHeader />
 
-            />
-          </View>
-          <View style={{}}>
-            <Text
-              style={{
-                fontSize: 17,
-                color: "navy",
-                fontFamily: "Inter-Black",
-              }}
-            >
-              Present: 78
-            </Text>
-            <Text
-              style={{
-                fontSize: 17,
-                color: "tomato",
-                fontFamily: "Inter-Black",
-              }}
-            >
-              Absent: 20
-            </Text>
-            <Text
-              style={{ fontSize: 17, color: "orange", fontFamily: "Inter-Black" }}
-            >
-              On leave: 2
-            </Text>
-          </View>
-        </View>
-        <View style={styles.chart}>
-               <Text
-            style={{
-              fontSize: 14,
-              color: "black",
-              fontFamily: "Inter-Medium",
-              left:26,
-              position: "absolute",
-              marginLeft: 26,
-              // fontWeight:'bold'
-            }}
-          >
-            Leaves
-          </Text>
-          <View>
-            <VictoryPie
-              colorScale={["tomato", "navy"]}
-              labels={() => ""}
-              data={data2}
-              innerRadius={40}
-              padAngle={3}
-              width={200}
-              origin={{ x: 75 }}
-              // height={100}
-            />
-          </View>
-          <View style={{}}>
-            <Text
-              style={{
-                fontSize: 17,
-                color: "tomato",
-                fontFamily: "Inter-Black",
-                fontWeight: "100",
-              }}
-              >
-              Taken: 78{" "}
-            </Text>
-            <Text
-              style={{ fontSize: 17, color: "navy", fontFamily: "Inter-Black" }}
-            >
-              Remaining: 20
-            </Text>
-          </View>
-        </View>
-        {/* <Good /> */}
-        {/* <AttendanceList/> */}
-                <Button
-                mode="contained"
-                style={{marginHorizontal:10,marginVertical:5}}
-                labelStyle={{fontFamily:'Inter-Medium',fontSize:16}}
-                buttonColor='navy'
-                onPress={()=>navigation.navigate("MarkAttendance")}
-                >
-                  Mark Attendance
-                </Button>
-        <Hello/>
-      </ScrollView>
+      <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+        <Button
+          mode="contained"
+          style={{ marginHorizontal: 10, marginVertical: 5 }}
+          labelStyle={{ fontFamily: "Inter-Medium", fontSize: 16 }}
+          buttonColor="navy"
+          onPress={() => navigation.navigate("MarkAttendance")}
+        >
+          Mark Attendance
+        </Button>
+        <Button
+          style={{ marginHorizontal: 10, marginVertical: 5 }}
+          labelStyle={{ fontFamily: "Inter-Medium", fontSize: 16 }}
+          mode="contained"
+          buttonColor="navy"
+          onPress={() => navigation.navigate("ApplyLeave")}
+        >
+          Apply Leave
+        </Button>
+      </View>
+      <FlatList
+        data={months}
+        contentContainerStyle={{ height: 40 }}
+        showsHorizontalScrollIndicator={false}
+        horizontal
+        renderItem={({ item }) => <Item title={item} />}
+        keyExtractor={(item) => item}
+      />
+      {/* <View><Text>aa</Text></View> */}
+      <FlatList
+        data={months}
+        // horizontal
+        renderItem={({ item }) => <MyComponent />}
+        keyExtractor={(item) => item}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    backgroundColor: "white",
+    // flex: 1,
     // justifyContent: "center",
     // alignItems: "center",
   },
-  chart: {
-    backgroundColor: "white",
-    flexDirection: "row",
-    // justifyContent: "space-between",
-    alignItems: "center",
-
-    marginHorizontal:10,
-    marginVertical:5,
-    // backgroundColor:'powderblue',
-    height: 150,
-    // elevation:5,
-    borderRadius: 15,
-    // borderWidth:0.5
-    elevation: 5,
-  },
-  labels:{
-
-  }
+  labels: {},
 });

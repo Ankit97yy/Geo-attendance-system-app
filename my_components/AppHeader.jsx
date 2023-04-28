@@ -28,7 +28,7 @@ const AppHeader = () => (
             titleStyle={{ fontSize: 18, fontFamily: "Inter-Black" }}
           />
           <Appbar.Content
-            title="Branch manager"
+            title="DownTown Branch"
             titleStyle={{
               fontSize: 13,
               color: "grey",
@@ -38,7 +38,7 @@ const AppHeader = () => (
         </View>
         <View style={{ flexDirection: "row" }}>
           {/* <Appbar.Action icon="magnify" onPress={() => {}} /> */}
-          <Appbar.Action icon="cog" onPress={() => {}} />
+          <Appbar.Action icon="logout" onPress={() => {}} />
         </View>
       </View>
     </View>

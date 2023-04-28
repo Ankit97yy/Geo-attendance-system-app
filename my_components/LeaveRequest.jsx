@@ -1,11 +1,13 @@
-import { View, Text, FlatList} from "react-native";
+import { View, Text, FlatList, TouchableOpacity, TouchableWithoutFeedback, StyleSheet} from "react-native";
 import React,{useState} from "react";
-import { Avatar, IconButton, Surface, TouchableRipple } from "react-native-paper";
+import { Avatar, IconButton, Surface, Portal,Dialog,Button, FAB } from "react-native-paper";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { SegmentedButtons } from 'react-native-paper';
 import Approvedrequest from "./Approvedrequest";
+import AppHeader from "./AppHeader";
+import Fab from "./Fab";
 
-export default function LeaveRequest() {
+export default function LeaveRequest({navigation}) {
   const request = [
     {
       emp_name: "Ankit Das",
@@ -28,7 +30,11 @@ export default function LeaveRequest() {
   ];
 
   const [data, setdata] = useState(request)
+   const [visible, setVisible] = useState(false);
   const [value, setValue] = useState('pending')
+    const showDialog = () => setVisible(true);
+
+  const hideDialog = () => setVisible(false);
   const deleterequest=(index)=>{
     const newData=[...request];
     newData.splice(index);
@@ -83,6 +89,7 @@ export default function LeaveRequest() {
     )
   }
   return (<>
+  <AppHeader/>
           <SegmentedButtons
           style={{marginVertical:5,marginHorizontal:10}}
           
@@ -104,7 +111,42 @@ export default function LeaveRequest() {
         ]}
       />
       {value==='pending'?<PendingRequest/> : <Approvedrequest/>}
-    
+      {/* <Portal>
+          <Dialog
+            style={{ height: 400 }}
+            visible={visible}
+            onDismiss={hideDialog}
+          >
+            <Dialog.Title>Request for Leave</Dialog.Title>
+            <Dialog.ScrollArea>
+        
+            </Dialog.ScrollArea>
+            <Dialog.Actions>
+              <Button onPress={hideDialog}>Take Leave</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal> */}
+        {/* <TouchableWithoutFeedback onPress={showDialog}> */}
+
+   <FAB 
+   icon="plus"
+   animated={true}
+   color="white"
+   style={styles.fab}
+   
+   /> 
+        {/* </TouchableWithoutFeedback> */}
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 10,
+    backgroundColor:'navy',
+    color:'white'
+  },
+})

@@ -2,7 +2,7 @@ import { createMaterialBottomTabNavigator } from "@react-navigation/material-bot
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Vict from "./Victory";
 import Login from "./Login";
-import Good from "./Good";
+import Employees from "./Employees";
 import LeaveRequest from "./LeaveRequest";
   const Tab = createMaterialBottomTabNavigator();
   const BottomTabNav=()=>{
@@ -56,8 +56,8 @@ import LeaveRequest from "./LeaveRequest";
                   />
                 ),
               }}
-              name="good"
-              component={Good}
+              name="Employees"
+              component={Employees}
             />
           </Tab.Navigator>
     )

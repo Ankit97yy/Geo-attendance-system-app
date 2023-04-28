@@ -1,28 +1,63 @@
 const db = require("../database");
-const { getTime,getDate } = require("../dateTimeFunctions");
+const { DateTime } = require("luxon");
+const cron = require("node-cron");
 
-async function addAttendance(req, res) {
+const { getTime, getDate, getDateTime } = require("../dateTimeFunctions");
+
+async function todayAttendanceOfAnEmployee(req,res){
   try {
-
-    if (req.body.in) {
-      const [result] = await db.execute(
-        "INSERT INTO attendance(emp_id,branch_id,in_time,date,created_user,created_time)",[req.body.employee_id,req.body.branch_id,getTime(),getDate(),req.body.id,getTime()]
-      );
-      res.send("successfully added")
-    } else {
-      const [result] = await db.execute(
-        "UPDATE attendance SET Out_time=? WHERE emp_id=? AND date=?",[getTime(),req.body.employee_id]
-      );
-      res.send("hol de")
-    }
+    const [result] = await db.execute(
+      "SELECT in_time,out_time FROM attendance WHERE emp_id=? AND date=?",[req.id,getDate()]
+    );
+    res.send(result);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 }
 
-async function getAttendances(req, res) {
+async function addAttendance(req, res) {
   try {
-    const [result] = await db.execute("SELECT * FROM attendance");
+    const [check_attendance] = await db.execute(
+      "SELECT in_time,out_time from attendance WHERE emp_id=? AND date=?",
+      [req.id, getDate()]
+    );
+
+    if (check_attendance.length === 0) {
+      const [result] = await db.execute(
+        "INSERT INTO attendance(emp_id,branch_id,in_time,status,date,created_time) VALUES(?,?,?,?,?,?)",
+        [42, 13, getTime(), "present", getDate(), getDateTime()]
+      );
+      res.json({ attendance: true });
+    } else if (check_attendance[0].out_time === null) {
+      const [result] = await db.execute(
+        "UPDATE attendance SET Out_time=? WHERE emp_id=? AND date=?",
+        [getTime(), req.id, getDate()]
+      );
+      res.json({ attendance: true });
+    } else {
+      console.log("done for today");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getAllAttendances(req, res) {
+  try {
+    const [result] = await db.execute(
+      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id ORDER BY attendance.date DESC"
+    );
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getAllAttendanceOfToday(req, res) {
+  try {
+    const [result] = await db.execute(
+      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id WHERE date=?",[getDate()]
+    );
     res.send(result);
   } catch (error) {
     console.log(error);
@@ -31,9 +66,21 @@ async function getAttendances(req, res) {
 
 async function getAttendance(req, res) {
   try {
+    const employee_id = req.id;
+    const [result] = await db.execute(
+      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id WHERE emp_id=?",
+      [employee_id]
+    );
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+  }
+}
+async function getAttendanceOfAnEmployee(req, res) {
+  try {
     const employee_id = req.params.id;
     const [result] = await db.execute(
-      "SELECT * FROM attendance WHERE employee_id=?",
+      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id WHERE emp_id=?",
       [employee_id]
     );
     res.send(result);
@@ -56,23 +103,72 @@ async function deleteAttendance(req, res) {
 
 async function updateAttendance(req, res) {
   try {
+    console.log("haha");
     const { id } = req.params;
     const attributes = req.body;
-    const keys = Object.keys(attributes);
-    const values = Object.values(attributes);
-    const placeholders = keys.map((key) => `${key} = ?`).join(", ");
-    const query = `UPDATE attendance SET ${placeholders} updated_time=? WHERE emp_id = ?`;
-    const params = [...values, getDateTime(), id];
-    const [result] = await db.execute(query, params);
+    const key = Object.keys(attributes);
+    const value = Object.values(attributes);
+    const placeholders = `${key[0]}="${
+      value[0]
+    }", updated_time="${getDateTime()}"`;
+    const [result] = await db.execute(
+      `UPDATE attendance SET ${placeholders} WHERE id=${id}`
+    );
+    res.sendStatus(200);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getWorkingHours(req, res) {
+  try {
+    const id = req.params.id;
+    const startdate = req.query.startDate;
+    const endDate = req.query.endDate;
+    const [result] = await db.execute(
+      "SELECT in_time,out_time,date FROM attendance WHERE emp_id=? AND date BETWEEN ? AND ?",
+      [id, startdate, endDate]
+    );
     res.send(result);
   } catch (error) {
     console.log(error);
   }
 }
+
+cron.schedule(
+  "14 13 * * 1-6",
+  async () => {
+    try {
+      const date = getDate();
+
+      const query = `SELECT employees.id, branch_location_id FROM employees WHERE employees.id NOT IN (SELECT emp_id FROM attendance WHERE date = ?) AND employees.id NOT IN (SELECT employee_id FROM leave_request WHERE start <= ? AND end >= ?)`;
+
+      const [emp_info] = await db.execute(query, [date, date, date]);
+
+      emp_info.map(async item=>{
+        await db.execute('INSERT INTO attendance(emp_id,branch_id,status,date) VALUES(?,?,?,?)',[item.id,item.branch_location_id,'absent',date])
+      })
+
+      console.log(
+        "🚀 ~ file: attendanceController.js:118 ~ cron.schedule ~ emp_info:",
+        emp_info
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  {
+    timezone: "Asia/Kolkata", // Set the timezone to India (IST)
+  }
+);
 module.exports = {
   getAttendance,
   deleteAttendance,
-  getAttendances,
+  getAllAttendances,
   updateAttendance,
-  addAttendance
+  addAttendance,
+  getAttendanceOfAnEmployee,
+  getWorkingHours,
+  todayAttendanceOfAnEmployee,
+  getAllAttendanceOfToday
 };

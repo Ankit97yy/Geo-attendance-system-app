@@ -4,14 +4,14 @@ import React, { useContext } from 'react'
 import { object,string } from 'yup'
 import { Button, Text, TextInput } from 'react-native'
 import { number } from 'yup/lib/locale'
-import { signedInContext } from '../../contexts/SignedInContext'
+import { signedInContext, userDataContext } from '../../contexts/SignedInContext'
 
 export default function OrganizationLatLong({route }) {
     const validationScheme = object({
         latitude: string().required(),
         longitude: string().required(),
     })
-    const { setisSignedIn } = useContext(signedInContext)
+    const { userData } = useContext(userDataContext)
 
     function register(val) {
         Axios.post('http://192.168.148.4:3001/register', {

@@ -1,12 +1,19 @@
-const {getAttendance,deleteAttendance,getAttendances,addAttendance} = require('../controllers/attendanceController')
+const {getAttendance,deleteAttendance,getAllAttendances,addAttendance,updateAttendance,getAttendanceOfAnEmployee, getWorkingHours, todayAttendanceOfAnEmployee, getAllAttendanceOfToday} = require('../controllers/attendanceController')
+const giveAccessTo = require('../middleware/giveAccessTo');
 
-const express=require('express')
+const express=require('express');
+// const { verifyToken } = require('../middleware/verifyToken');
 
 const router=express.Router()
 
-router.get('/getAttendance/:id',getAttendance);
-router.get('/getAttendances',getAttendances);
-router.delete('/deleteAttendance',deleteAttendance)
+router.get('/getAttendance/',getAttendance);
+router.get('/getAttendance/:id',giveAccessTo('admin'),getAttendanceOfAnEmployee);
+router.get('/getAllAttendances',giveAccessTo('admin'),getAllAttendances);
+router.get('/getWorkingHours/:id',giveAccessTo('admin'),getWorkingHours);
+router.get("/getTodayAttendanceOfAnEmployee",todayAttendanceOfAnEmployee)
+router.get("/getAllAttendanceOfToday",giveAccessTo('admin'),getAllAttendanceOfToday);
+router.delete('/deleteAttendance',giveAccessTo('admin'),deleteAttendance)
 router.post('/addAttendance',addAttendance)
+router.put('/updateAttendance/:id',giveAccessTo('admin'),updateAttendance)
 
 module.exports=router
