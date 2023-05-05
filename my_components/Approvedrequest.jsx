@@ -1,39 +1,35 @@
 import { View, Text, FlatList } from "react-native";
-import React, { useState } from "react";
-import { Surface } from "react-native-paper";
+import React, { useEffect, useState } from "react";
+import { FAB, Surface } from "react-native-paper";
 import { Avatar } from "react-native-paper";
+import axios from "axios";
+import { DateTime } from "luxon";
+import WelcomeScreen from "./WelcomeScreen";
+import AppHeader from "./AppHeader";
+import { StyleSheet } from "react-native";
 
-export default function Approvedrequest() {
-  const ResolvedRequest = [
-    {
-      emp_name: "Ankit Das",
-      reason: "Sick Leave",
-      duration: "from jan 15 to jan 20",
-      status: "Approved",
-      id: "1",
-    },
-    {
-      emp_name: "Arijeet Kumar Das",
-      reason: "Annual Leave",
-      duration: "from jan 15 to jan 20",
-      status: "Rejected",
-      id: "2",
-    },
-    {
-      emp_name: "Rasidul Haque",
-      reason: "Sick Leave",
-      duration: "from jan 15 to jan 20",
-      status: "Approved",
-      id: "3",
-    },
-  ];
-
-  const [data, setdata] = useState(ResolvedRequest);
+export default function Approvedrequest({navigation}) {
+  const [leaves, setleaves] = useState([])
+  console.log("🚀 ~ file: Approvedrequest.jsx:10 ~ Approvedrequest ~ leaves:", leaves)
+  useEffect(()=>{
+    axios.get(`/leave/getAllLeavesOfAnEmployee`)
+    .then(res=>setleaves(res.data))
+  },[])
 
   return (
+    <>
+    <AppHeader/>
+    <FAB
+        icon="plus"
+        size="medium"
+        style={styles.fab}
+        color="white"
+        onPress={() => navigation.navigate("ApplyLeave")}
+      />
     <FlatList
-      data={data}
-      renderItem={({ item, index }) => {
+      data={leaves}
+      contentContainerStyle={{marginTop:5}}
+      renderItem={({ item }) => {
         return (
           <Surface
             style={{
@@ -49,36 +45,41 @@ export default function Approvedrequest() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "space-between",
+                justifyContent: "space-around",
                 flex: 1,
               }}
             >
               <View style={{ flexDirection: "row" }}>
-                <Avatar.Text
-                  size={37}
-                  label={item.emp_name.split(" ").map((i) => i.charAt(0))}
-                  style={{ marginHorizontal: 10, alignSelf: "center" }}
-                />
                 <View style={{}}>
-                  <Text style={{ fontFamily: "Inter-Black", fontSize: 17 }}>
-                    {item.emp_name}
+                  <Text style={{ fontFamily: "Inter-Black",fontSize:17,textTransform:'capitalize' }}>
+                    {item.leave_type} leave
                   </Text>
                   <Text style={{ fontFamily: "Inter-Black", color: "grey" }}>
-                    {item.reason}
-                  </Text>
-                  <Text style={{ fontFamily: "Inter-Black", color: "grey" }}>
-                    {item.duration}
+                    {DateTime.fromISO(item.start).toLocaleString({day:'numeric',month:'short',year:'2-digit'})} - {DateTime.fromISO(item.end).toLocaleString({day:'numeric',month:'short',year:'numeric'})}
                   </Text>
                 </View>
               </View>
               <View style={{marginHorizontal:10}}>
-                <Text style={item.status==='Approved'?{color:'green',shadowColor:'green',fontSize:17,textShadowColor:'green',textShadowRadius:0.5}:{color:'red',fontSize:17,textShadowColor:'red',textShadowRadius:0.2}}>{item.status}</Text>
+                <Text style={item.status==='approved'?{color:'green',backgroundColor:'#b4f3d0',borderRadius:5,padding:5,shadowColor:'green',fontSize:16,textShadowColor:'green',textShadowRadius:0.5,textTransform:'capitalize'}:{color:'red',fontSize:16,backgroundColor:'#ffeced',padding:5,borderRadius:5,textShadowColor:'red',textShadowRadius:0.2,textTransform:'capitalize'}}>{item.status}</Text>
               </View>
             </View>
           </Surface>
         );
       }}
       keyExtractor={(item) => item.id.toString()}
-    />
+      />
+      </>
   );
 }
+
+const styles = StyleSheet.create({
+
+  fab: {
+    position: "absolute",
+    margin: 16,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+    backgroundColor: "#0066ff",
+  },
+})

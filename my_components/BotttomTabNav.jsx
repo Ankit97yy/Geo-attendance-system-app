@@ -4,47 +4,34 @@ import Vict from "./Victory";
 import Login from "./Login";
 import Employees from "./Employees";
 import LeaveRequest from "./LeaveRequest";
+import Approvedrequest from "./Approvedrequest";
   const Tab = createMaterialBottomTabNavigator();
   const BottomTabNav=()=>{
     return(
-          <Tab.Navigator shifting={true} barStyle={{}}>
+          <Tab.Navigator barStyle={{backgroundColor:'white',borderColor:'black',borderTopWidth:1}} shifting={true}>
             <Tab.Screen
               options={{
-                tabBarIcon: ({ color }) => (
-                  <MaterialCommunityIcons name="home" color={color} size={26}/>
+                tabBarIcon: ({ focused,color }) => (
+                  <MaterialCommunityIcons name="home" color={focused?"white":color} size={26}/>
                 ),
                 title: "Home",
               }}
               name="Vict"
               component={Vict}
             />
-            <Tab.Screen
-              options={{
-                tabBarIcon: ({ color }) => (
-                  <MaterialCommunityIcons
-                    name="calendar-check"
-                    color={color}
-                    size={26}
-                  />
-                ),
-                // tabBarBadge: 2,
-                // tabBarBadgeStyle: { backgroundColor: 'grey', color: 'white' },
-              }}
-              name="Login"
-              component={Login}
-            />
+            
                <Tab.Screen
               options={{
-                tabBarIcon: ({ color }) => (
+                tabBarIcon: ({focused, color }) => (
                   <MaterialCommunityIcons
                     name="file-document-edit-outline"
-                    color={color}
+                    color={focused?"white":color}
                     size={26}
                   />
                 ),
               }}
               name="Leaves"
-              component={LeaveRequest}
+              component={Approvedrequest}
             />
                <Tab.Screen
               options={{

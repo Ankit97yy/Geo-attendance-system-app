@@ -5,7 +5,7 @@ import { View, StyleSheet, Text } from "react-native";
 import { Button } from "react-native-paper";
 import { useContext } from "react";
 import { TextInput } from "react-native-paper";
-import {  userDataContext } from "../../contexts/SignedInContext";
+import { userDataContext } from "../../contexts/SignedInContext";
 import * as SecureStore from "expo-secure-store";
 import Lottie from "lottie-react-native";
 import { SECRET_KEY } from "@env";
@@ -25,24 +25,31 @@ export default function LogIn() {
   });
 
   const login = (val) => {
-    console.log("llllll")
-    axios.post("http://192.168.216.4:3001/auth/login", {
-      email: val.email,
-      password: val.password,
-    })
+    console.log("llllll");
+    axios
+      .post("auth/login", {
+        email: val.email,
+        password: val.password,
+      })
       .then((res) => {
         if (res.data.accessToken) {
           console.log(res.data.accessToken);
           // return <loginSuccModal/>
           setuserData((prev) => {
-            return { ...prev,accessToken:res.data.accessToken, isSignedIn: true };
+            return {
+              ...prev,
+              accessToken: res.data.accessToken,
+              isSignedIn: true,
+              fullName: res.data.name,
+              latitude: res.data.latitude,
+              longitude: res.data.longitude,
+              branch_location_name: res.data.branchName,
+            };
           });
-          
-          saveToken(SECRET_KEY, res.data.accessToken)
-        } 
-        else if(!(res.data?.user)) console.log("user not found")
-        else if(!res.data.password) console.log("incorrect password")
-        
+
+          saveToken(SECRET_KEY, res.data.accessToken);
+        } else if (!res.data?.user) console.log("user not found");
+        else if (!res.data.password) console.log("incorrect password");
       })
       .catch((err) => {
         console.log(err);

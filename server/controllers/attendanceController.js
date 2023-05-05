@@ -1,9 +1,9 @@
 const db = require("../database");
 const { DateTime } = require("luxon");
 const cron = require("node-cron");
-
 const { getTime, getDate, getDateTime } = require("../dateTimeFunctions");
 
+// to check if attendance is already marked today
 async function todayAttendanceOfAnEmployee(req,res){
   try {
     const [result] = await db.execute(
@@ -21,6 +21,8 @@ async function addAttendance(req, res) {
       "SELECT in_time,out_time from attendance WHERE emp_id=? AND date=?",
       [req.id, getDate()]
     );
+    console.log("🚀 ~ file: attendanceController.js:24 ~ addAttendance ~ check_attendance:", check_attendance)
+    
 
     if (check_attendance.length === 0) {
       const [result] = await db.execute(
@@ -45,7 +47,7 @@ async function addAttendance(req, res) {
 async function getAllAttendances(req, res) {
   try {
     const [result] = await db.execute(
-      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id ORDER BY attendance.date DESC"
+      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time,late_arrival,early_departure FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id ORDER BY attendance.date DESC"
     );
     res.send(result);
   } catch (error) {
@@ -64,12 +66,15 @@ async function getAllAttendanceOfToday(req, res) {
   }
 }
 
+//get attendance of the logged in employee
 async function getAttendance(req, res) {
   try {
     const employee_id = req.id;
+    const startDate=req.query.startDate
+    const endDate=req.query.endDate
     const [result] = await db.execute(
-      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id WHERE emp_id=?",
-      [employee_id]
+      "SELECT id,date,status,in_time,out_time,late_arrival,early_departure FROM attendance WHERE emp_id=? AND date BETWEEN ? AND ?",
+      [employee_id,startDate,endDate]
     );
     res.send(result);
   } catch (error) {
@@ -80,7 +85,7 @@ async function getAttendanceOfAnEmployee(req, res) {
   try {
     const employee_id = req.params.id;
     const [result] = await db.execute(
-      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id WHERE emp_id=?",
+      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time,late_arrival,early_departure FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id WHERE emp_id=?",
       [employee_id]
     );
     res.send(result);
@@ -103,14 +108,13 @@ async function deleteAttendance(req, res) {
 
 async function updateAttendance(req, res) {
   try {
-    console.log("haha");
     const { id } = req.params;
     const attributes = req.body;
     const key = Object.keys(attributes);
     const value = Object.values(attributes);
-    const placeholders = `${key[0]}="${
-      value[0]
-    }", updated_time="${getDateTime()}"`;
+    console.log("🚀 ~ file: attendanceController.js:115 ~ updateAttendance ~ value:", value[0])
+    const placeholders = `${key[0]}="${value[0]}", updated_time="${getDateTime()}"`;
+    console.log("🚀 ~ file: attendanceController.js:118 ~ updateAttendance ~ placeholders:", placeholders)
     const [result] = await db.execute(
       `UPDATE attendance SET ${placeholders} WHERE id=${id}`
     );
@@ -126,7 +130,7 @@ async function getWorkingHours(req, res) {
     const startdate = req.query.startDate;
     const endDate = req.query.endDate;
     const [result] = await db.execute(
-      "SELECT in_time,out_time,date FROM attendance WHERE emp_id=? AND date BETWEEN ? AND ?",
+      "SELECT id,in_time,out_time,date FROM attendance WHERE emp_id=? AND date BETWEEN ? AND ?",
       [id, startdate, endDate]
     );
     res.send(result);

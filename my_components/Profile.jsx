@@ -1,31 +1,33 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useEffect, useContext } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from './storeroom/HomeScreen';
 import BottomTabNav from './BotttomTabNav';
 import MarkAtttendance from './MarkAtttendance';
 import Vict from './Victory';
-import AppHeader from './AppHeader';
-import { Provider as PaperProvider,MD3LightTheme } from 'react-native-paper';
 import EmpWorkingHours from './EmpWorkingHours';
-import AddEmployee from './AddEmployee';
-import AddRequest from './AddRequest';
 import { userDataContext } from '../contexts/SignedInContext';
 import axios from 'axios';
 import ApplyLeave from './ApplyLeave';
 export default function Profile() {
     const Stack = createNativeStackNavigator()
-      const theme={
-    ...MD3LightTheme,
-    roundness:3,
-    colors: {
-      ...MD3LightTheme.colors,
-    
-    },
-  };
-  const {userData}=useContext(userDataContext)
-  axios.defaults.baseURL = "http://192.168.216.4:3001/";
+   
+  const {userData,setuserData}=useContext(userDataContext)
   axios.defaults.headers.common['Authorization'] = `Bearer ${userData.accessToken}`;
+
+  useEffect(() => {
+  axios.get("employee/getLoggedInEmployee")
+  .then(res=>{
+    setuserData(prev=>{
+      return{
+        ...prev,
+        fullName:res.data.name,
+        branch_location_name:res.data.location_name,
+        latitude:res.data.latitude,
+        longitude:res.data.longitude
+      }
+    })
+  })
+  }, [])
+  
 
     return (
         // <stack.Navigator>
@@ -38,9 +40,9 @@ export default function Profile() {
           <Stack.Navigator screenOptions={{headerShown:false}}>
             <Stack.Screen name="BottomTabNav" component={BottomTabNav}/>
             <Stack.Screen name="vict" component={Vict}/>
-            <Stack.Screen options={{headerShown:true}} name="MarkAttendance" component={MarkAtttendance}/>
+            <Stack.Screen options={{headerShown:true,headerTitle:'Mark Attendance',headerTintColor:'white',headerStyle:{backgroundColor:'#0066ff'}}} name="MarkAttendance" component={MarkAtttendance}/>
             <Stack.Screen name='EmpWorkingHours' component={EmpWorkingHours}/>
-            <Stack.Screen options={{headerShown:true,headerTitle:'Apply Leave'}} name='ApplyLeave' component={ApplyLeave}/>
+            <Stack.Screen options={{headerShown:true,headerTitle:'Apply Leave',headerTintColor:'white',headerStyle:{backgroundColor:'#0066ff'}}} name='ApplyLeave' component={ApplyLeave}/>
           </Stack.Navigator>
         </>
         // </PaperProvider>

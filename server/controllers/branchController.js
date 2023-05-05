@@ -12,6 +12,14 @@ async function getBranches(req,res){
         console.log(error)
     }
 }
+async function getEmployeeBranche(req,res){
+    try {
+        const [result]= await db.execute('SELECT * FROM branch_locations')
+        res.send(result)
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 async function addBranch(req,res){
     try {

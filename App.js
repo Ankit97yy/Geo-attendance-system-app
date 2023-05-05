@@ -4,6 +4,7 @@ import { useFonts } from "expo-font";
 import { userDataContext } from "./contexts/SignedInContext";
 import Profile from "./my_components/Profile";
 import OutsideOfProfile from "./my_components/OutsideProfile/OutsideOfProfile";
+import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import * as SecureStore from "expo-secure-store";
@@ -11,13 +12,17 @@ import { SECRET_KEY } from "@env";
 import { MD3LightTheme, Provider as PaperProvider } from "react-native-paper";
 import 'intl';
 import 'intl/locale-data/jsonp/en';
+import axios from "axios";
+import { colors } from "./my_components/coolrs";
 // import AppHeader from './my_components/AppHeader';
 
 export default function App() {
+  axios.defaults.baseURL = "http://192.168.29.133:3001/";
   const [userData, setuserData] = useState({
     fullName: "",
-    id: null,
-    branch_location_id: null,
+    branch_location_name: "",
+      latitude:0,
+      longitude:0,
     isSignedIn: false,
     accessToken:null
   });
@@ -57,10 +62,7 @@ export default function App() {
   const theme = {
     ...MD3LightTheme,
     roundness: 3,
-    colors: {
-      ...MD3LightTheme.colors,
-      primary:'navy'
-    },
+    colors:colors
   };
 
   if (userData.isSignedIn === null) return <ActivityIndicator animating={true} />;
@@ -77,9 +79,10 @@ export default function App() {
           ) : (
             <OutsideOfProfile />
           )}
+      {/* <StatusBar style="light" translucent /> */}
+
         </PaperProvider>
       </userDataContext.Provider>
     </NavigationContainer>
-    // <OrganizationName/>
   );
 }

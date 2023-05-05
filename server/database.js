@@ -5,6 +5,7 @@ const con = mysql.createPool({
   host: "localhost",
   password: "mariamaria",
   database: "Geo_attendance_system",
+  decimalNumbers:true
 });
 
 module.exports = con;

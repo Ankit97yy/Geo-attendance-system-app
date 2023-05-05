@@ -12,14 +12,23 @@ export const initialState = {
   visible: false,
   punchIn: false,
   punchOut: false,
-  onLeave: false,
+  onLeave: true,
   donePunchedIn: false,
   donePunchedOut: false,
   inTime: false,
+  branchLocation: {
+    latitude: 0,
+    longitude: 0,
+  },
   canMarkAttendance() {
-    console.log("inside can mark attendace")
-    return this.showMarker && !this.onLeave && this.inTime && (!this.donePunchedIn || !this.donePunchedOut);
-  }
+    console.log("inside can mark attendace");
+    return (
+      this.showMarker &&
+      !this.onLeave &&
+      this.inTime &&
+      (!this.donePunchedIn || !this.donePunchedOut)
+    );
+  },
 };
 
 export function locationReducer(state, action) {
@@ -84,8 +93,10 @@ export function locationReducer(state, action) {
       };
     case "checkTime":
       if (
-        DateTime.now() >= DateTime.fromFormat(action.payload.startTime,"HH:mm:ss") &&
-        DateTime.now() <= DateTime.fromFormat(action.payload.endTime,"HH:mm:ss")
+        DateTime.now() >=
+          DateTime.fromFormat(action.payload.startTime, "HH:mm:ss") &&
+        DateTime.now() <=
+          DateTime.fromFormat(action.payload.endTime, "HH:mm:ss")
       ) {
         console.log("welcome");
         return {

@@ -24,6 +24,17 @@ async function getEmployee(req, res) {
     console.log(error);
   }
 }
+async function getLoggedInEmployee(req, res) {
+  try {
+    const emp_id = req.id;
+    const [result] = await db.execute(
+      "SELECT full_name,location_name,latitude,longitude FROM employees JOIN branch_locations ON employees.branch_location_id=branch_locations.id WHERE employees.id= ?",[emp_id]
+    );
+    res.send({name:result[0].full_name,location_name:result[0].location_name,latitude:result[0].latitude,longitude:result[0].longitude});
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 async function addEmployee(req, res) {
   try {
@@ -113,4 +124,5 @@ module.exports = {
   updateEmployee,
   getEmployees,
   addEmployee,
+  getLoggedInEmployee
 };

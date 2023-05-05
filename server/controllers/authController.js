@@ -61,7 +61,7 @@ async function loginUser(req, res) {
     const email = req.body.email;
     const password = req.body.password;
     const [checkUser] = await db.execute(
-      "select id,full_name,branch_location_id,password,is_admin from employees where email=?",
+      "select employees.id,full_name,branch_location_id,latitude,location_name,longitude,password,is_admin from employees JOIN branch_locations ON employees.branch_location_id=branch_locations.id where email=?",
       [email]
     );
     console.log(checkUser);
@@ -80,7 +80,7 @@ async function loginUser(req, res) {
       },
       process.env.ACCESS_TOKEN_SECRET
     );
-    res.send({ name: checkUser[0].full_name,id:checkUser[0].id, accessToken: accessToken });
+    res.send({ name: checkUser[0].full_name,accessToken: accessToken,latitude: checkUser[0].latitude,longitude: checkUser[0].longitude,branchName:checkUser[0].location_name});
   } catch (error) {
     console.log("database ot nuhumal", error);
   }

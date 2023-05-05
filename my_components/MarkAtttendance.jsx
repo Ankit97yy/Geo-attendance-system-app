@@ -2,16 +2,18 @@ import { initialState } from "../hooks/LocationHook";
 import { locationReducer } from "../hooks/LocationHook";
 import { View, Text, StyleSheet, Image } from "react-native";
 import * as Location from "expo-location";
-import React, { useEffect, useReducer } from "react";
-import MapView, { Marker } from "react-native-maps";
+import React, { useContext, useEffect, useReducer } from "react";
+import MapView, { Circle, Marker } from "react-native-maps";
 import { Button, FAB, Modal, Portal } from "react-native-paper";
 import Lottie from "lottie-react-native";
 import haversine from "./test";
 import moment from "moment/moment";
 import axios from "axios";
+import { userDataContext } from "../contexts/SignedInContext";
 
 export default function MarkAtttendance() {
   const [state, dispatch] = useReducer(locationReducer, initialState);
+  const { userData } = useContext(userDataContext);
 
   const handlePunchIn = () => {
     axios
@@ -32,17 +34,18 @@ export default function MarkAtttendance() {
   };
 
   useEffect(() => {
-    dispatch({type:"checkTime",payload:{startTime:'09:30:00',endTime:'18:30:00'}})
+    dispatch({
+      type: "checkTime",
+      payload: { startTime: "09:30:00", endTime: "18:30:00" },
+    });
     axios
       .get("/attendance/getTodayAttendanceOfAnEmployee")
       .then((res) => {
         if (res.data.length > 0) {
-          console.log(res.data,"nanananana")
-          if (res.data[0].in_time !== null){
+          if (res.data[0].in_time !== null) {
             dispatch({ type: "donePunchedIn", payload: true });
           }
-          if (res.data[0].out_time !== null){
-            console.log("donePunchedOut~~~~~~~~`",res.data[0].out_time)
+          if (res.data[0].out_time !== null) {
             dispatch({ type: "donePunchedOut", payload: true });
           }
         }
@@ -67,37 +70,37 @@ export default function MarkAtttendance() {
           console.log("Permission to access location was denied");
           return;
         }
-        let locations = await Location.getCurrentPositionAsync();
-        console.log(
-          "🚀 ~ file: MarkAtttendance.jsx:83 ~ location:",
-          locations
-        );
-        dispatch({
-          type: "location",
-          payload: locations,
-        });
 
         timeId = setInterval(async () => {
-          console.log("fired")
-          let locations = await Location.getCurrentPositionAsync();
-          console.log(
-            "🚀 ~ file: MarkAtttendance.jsx:83 ~ location:",
-            locations
-          );
-          dispatch({
-            type: "location",
-            payload: locations,
-          });
-        }, 3000);
-
+          try {
+            console.log("fired");
+            console.log(timeId, "id");
+            let locations = await Location.getCurrentPositionAsync();
+            console.log(
+              "🚀 ~ file: MarkAtttendance.jsx:83 ~ location:",
+              locations
+            );
+            dispatch({
+              type: "location",
+              payload: locations,
+            });
+          } catch (error) {
+            console.log("cleaned");
+            console.log(timeId, "clear time");
+            clearInterval(timeId);
+            console.log(error, "ppppp");
+          }
+        }, 2000);
       } catch (error) {
-        console.log(error);
+        console.log(error, "ppppp");
       }
     })();
-    return () =>{
-      console.log("cleaned")
-      console.log(timeId,"clear time")
-      clearInterval(timeId)
+
+
+    return () => {
+      console.log("cleaned");
+      console.log(timeId, "clear time");
+      clearInterval(timeId);
     };
   }, [state.render]);
 
@@ -106,8 +109,8 @@ export default function MarkAtttendance() {
       const distance = haversine(
         state.currentLocation.coords.latitude,
         state.currentLocation.coords.longitude,
-        26.138243,
-        91.799387
+        userData.latitude, //! set data from context
+        userData.longitude
       );
       console.log(
         "🚀 ~ file: MarkAtttendance.jsx:86 ~ useEffect ~ distance:",
@@ -116,7 +119,7 @@ export default function MarkAtttendance() {
       if (distance <= 100) {
         if (!state.donePunchedIn)
           dispatch({ type: "enablePunchIn", payload: true });
-       else if (!state.donePunchedOut)
+        else if (!state.donePunchedOut)
           dispatch({ type: "enablePunchOut", payload: true });
       } else {
         dispatch({ type: "enablePunchIn", payload: false });
@@ -131,14 +134,21 @@ export default function MarkAtttendance() {
   ]); //! dependency array is an object!!!
 
   let message;
-  if (state.onLeave) 
-  message = <Text style={{ fontSize: 18 }}>On leave</Text>;
+  if (state.onLeave) message = <Text style={{ fontSize: 18 }}>You are on leave</Text>;
   else if (state.punchIn || state.punchOut)
-  message = <Text style={{ fontSize: 18 }}>You are inside</Text>;
+    message = <Text style={{ fontSize: 18 }}>You are in office reach</Text>;
   else if (state.donePunchedIn && state.donePunchedOut)
-  message = <Text style={{ fontSize: 18 }}>You have marked your attendance</Text>
-  else if(!state.inTime) message= <Text style={{ fontSize: 18 }}>You can mark attendance only in office hours</Text>;
-  else message= <Text style={{ fontSize: 18 }}>You are outside</Text>;
+    message = (
+      <Text style={{ fontSize: 18 }}>You have marked your attendance</Text>
+    );
+  else if (!state.inTime)
+    message = (
+      <Text style={{ fontSize: 18 }}>
+        You can mark attendance only in office hours
+      </Text>
+    );
+  else
+    message = <Text style={{ fontSize: 18 }}>You are not in office reach</Text>;
 
   // if (!currentLocation) {
   //   return (
@@ -180,15 +190,15 @@ export default function MarkAtttendance() {
       <View style={styles.container}>
         <MapView
           style={styles.map}
-          initialRegion={{
-            latitude: state.currentLocation.coords.latitude,
-            longitude: state.currentLocation.coords.longitude,
-            latitudeDelta: 0.0122,
-            longitudeDelta: 0.0121,
-          }}
+          // initialRegion={{
+          //   latitude: 26.1635302,
+          //   longitude: 91.7648572,
+          //   latitudeDelta: 0.0122,
+          //   longitudeDelta: 0.0121,
+          // }}
           region={{
-            latitude: state.currentLocation.coords.latitude,
-            longitude: state.currentLocation.coords.longitude,
+            latitude: userData.latitude,
+            longitude: userData.longitude,
             latitudeDelta: 0.0122,
             longitudeDelta: 0.0121,
           }}
@@ -200,11 +210,19 @@ export default function MarkAtttendance() {
                 longitude: state.currentLocation.coords.longitude,
               }}
               // image={require("../assets/kk.jpg")}
-              pin
             >
               <CustomMarker />
             </Marker>
           ) : null}
+          <Circle
+            center={{
+              latitude: userData.latitude,
+              longitude: userData.longitude,
+            }}
+            strokeWidth={2}
+            strokeColor="green"
+            radius={100}
+          />
         </MapView>
         <View
           style={{ justifyContent: "center", alignItems: "center", top: 30 }}
@@ -226,28 +244,34 @@ export default function MarkAtttendance() {
         <View
           style={{
             flexDirection: "row",
-            justifyContent: "space-around",
+            justifyContent: "space-evenly",
             marginTop: 70,
           }}
         >
-          <Button
-            disabled={!state.punchIn}
-            style={{ width: "45%", padding: 5 }}
-            mode="contained"
-            onPress={handlePunchIn}
-            buttonColor="#083efd"
-          >
-            punch in
-          </Button>
-          <Button
-            buttonColor="#083efd"
-            style={{ width: "45%", padding: 5 }}
-            mode="contained"
-            disabled={!state.punchOut}
-            onPress={handlePunchOut}
-          >
-            punch out
-          </Button>
+          <View>
+            <Button
+              disabled={!state.punchIn}
+              style={{ padding: 5 }}
+              mode="contained"
+              onPress={handlePunchIn}
+              buttonColor="#083efd"
+            >
+              punch in
+            </Button>
+            <Text></Text>
+          </View>
+          <View>
+            <Button
+              buttonColor="#083efd"
+              style={{ padding: 5 }}
+              mode="contained"
+              disabled={!state.punchOut}
+              onPress={handlePunchOut}
+            >
+              punch out
+            </Button>
+            <Text></Text>
+          </View>
         </View>
 
         <Portal>

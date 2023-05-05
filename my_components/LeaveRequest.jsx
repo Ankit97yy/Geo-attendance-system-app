@@ -6,8 +6,13 @@ import { SegmentedButtons } from 'react-native-paper';
 import Approvedrequest from "./Approvedrequest";
 import AppHeader from "./AppHeader";
 import Fab from "./Fab";
+import ApplyLeave from "./ApplyLeave";
+import { StatusBar, setStatusBarStyle } from "expo-status-bar";
+import WelcomeScreen from "./WelcomeScreen";
 
 export default function LeaveRequest({navigation}) {
+  setStatusBarStyle('dark')
+
   const request = [
     {
       emp_name: "Ankit Das",
@@ -31,7 +36,7 @@ export default function LeaveRequest({navigation}) {
 
   const [data, setdata] = useState(request)
    const [visible, setVisible] = useState(false);
-  const [value, setValue] = useState('pending')
+  const [value, setValue] = useState('New Leave')
     const showDialog = () => setVisible(true);
 
   const hideDialog = () => setVisible(false);
@@ -90,6 +95,7 @@ export default function LeaveRequest({navigation}) {
   }
   return (<>
   <AppHeader/>
+  {/* <WelcomeScreen/> */}
           <SegmentedButtons
           style={{marginVertical:5,marginHorizontal:10}}
           
@@ -97,45 +103,21 @@ export default function LeaveRequest({navigation}) {
         onValueChange={setValue}
         buttons={[
             {
-            value: 'pending',
-            label: 'Pending',
+            value: 'New Leave',
+            label: 'New leave',
             style:{backgroundColor:'white'},
             showSelectedCheck:true
         },
           {
-              value: 'Fulfilled',
-            label: 'Fulfilled',
+              value: 'All Leaves',
+            label: 'All Leaves',
             style:{backgroundColor:'white'},
             showSelectedCheck:true
         }
         ]}
       />
-      {value==='pending'?<PendingRequest/> : <Approvedrequest/>}
-      {/* <Portal>
-          <Dialog
-            style={{ height: 400 }}
-            visible={visible}
-            onDismiss={hideDialog}
-          >
-            <Dialog.Title>Request for Leave</Dialog.Title>
-            <Dialog.ScrollArea>
-        
-            </Dialog.ScrollArea>
-            <Dialog.Actions>
-              <Button onPress={hideDialog}>Take Leave</Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal> */}
-        {/* <TouchableWithoutFeedback onPress={showDialog}> */}
+      {value==='New Leave'? <ApplyLeave/> : <Approvedrequest/>}
 
-   <FAB 
-   icon="plus"
-   animated={true}
-   color="white"
-   style={styles.fab}
-   
-   /> 
-        {/* </TouchableWithoutFeedback> */}
     </>
   );
 }
