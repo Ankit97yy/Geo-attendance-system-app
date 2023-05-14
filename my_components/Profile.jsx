@@ -40,9 +40,9 @@ export default function Profile() {
           <Stack.Navigator screenOptions={{headerShown:false}}>
             <Stack.Screen name="BottomTabNav" component={BottomTabNav}/>
             <Stack.Screen name="vict" component={Vict}/>
-            <Stack.Screen options={{headerShown:true,headerTitle:'Mark Attendance',headerTintColor:'white',headerStyle:{backgroundColor:'#0066ff'}}} name="MarkAttendance" component={MarkAtttendance}/>
+            <Stack.Screen options={{headerShown:true,headerTitle:'Mark Attendance',headerTintColor:'white',headerStyle:{backgroundColor:'#0088ff'}}} name="MarkAttendance" component={MarkAtttendance}/>
             <Stack.Screen name='EmpWorkingHours' component={EmpWorkingHours}/>
-            <Stack.Screen options={{headerShown:true,headerTitle:'Apply Leave',headerTintColor:'white',headerStyle:{backgroundColor:'#0066ff'}}} name='ApplyLeave' component={ApplyLeave}/>
+            <Stack.Screen options={{headerShown:true,headerTitle:'Apply Leave',headerTintColor:'white',headerStyle:{backgroundColor:'#0088ff'}}} name='ApplyLeave' component={ApplyLeave}/>
           </Stack.Navigator>
         </>
         // </PaperProvider>

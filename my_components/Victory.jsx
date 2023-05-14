@@ -21,29 +21,30 @@ export default function Vict({ navigation }) {
   const { setuserData, userData } = useContext(userDataContext);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [currentDate, setcurrentDate] = useState(DateTime.now());
-  const [selectedMonth, setSelectedMonth] = useState({
-    month: "April",
-    id: "04",
-  });
   const [attendance, setattendance] = useState([]);
+
+  const fetchdata=(source)=>{
+    console.log("fetch")
+    axios
+    .get("attendance/getAttendance", {
+      cancelToken:source.token,
+      params: {
+        startDate: `${currentDate.startOf('month').toFormat('yyyy-MM-dd')}`,
+        endDate: `${currentDate.endOf('month').toFormat('yyyy-MM-dd')}`,
+      },
+    })
+    .then((res) => setattendance(res.data))
+    .catch((error) => {
+      if (axios.isCancel(error)) {
+        console.log('Request canceled:', error.message);
+      } else {
+        console.log('Error:', error.message);
+      }
+    });
+  }
   useEffect(() => {
     const source = axios.CancelToken.source();
-    axios
-      .get("attendance/getAttendance", {
-        cancelToken:source.token,
-        params: {
-          startDate: `${currentDate.startOf('month').toFormat('yyyy-MM-dd')}`,
-          endDate: `${currentDate.endOf('month').toFormat('yyyy-MM-dd')}`,
-        },
-      })
-      .then((res) => setattendance(res.data))
-      .catch((error) => {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled:', error.message);
-        } else {
-          console.log('Error:', error.message);
-        }
-      });
+    fetchdata(source)
 
       return ()=>source.cancel('user cancelled the request')
   }, [currentDate]);
@@ -81,39 +82,18 @@ export default function Vict({ navigation }) {
   const hideDatePicker = () => {
     setDatePickerVisibility(false);
   };
-  const Item = ({ title }) => (
-    <View style={{ marginLeft: 5 }}>
-      <Button
-        mode={selectedMonth.id === title.id ? "contained-tonal" : "outlined"}
-        onPress={() => setSelectedMonth(title)}
-        style={{ borderRadius: 5 }}
-        buttonColor={selectedMonth.id === title.id ? "#0066ff" : "white"}
-        labelStyle={{
-          // fontWeight: selectedMonth.id === title.id ? "bold" : "normal",
-          // textDecorationLine:
-          //   selectedMonth.id === title.id ? "underline" : "none",
-          fontSize: selectedMonth.id === title.id ? 17 : 15,
-          color: selectedMonth.id === title.id ? "white" : "black",
-          fontFamily: "Inter-Black",
-        }}
-      >
-        {title.month}
-      </Button>
-    </View>
-  );
+
 
   return (
     <View style={styles.container}>
       <AppHeader />
       <DateTimePickerModal
-        min
           isVisible={isDatePickerVisible}
           mode="date"
           onConfirm={handleConfirm}
           onCancel={hideDatePicker}
           maximumDate={new Date(2050,12,30)}
         />
-      {/* <WelcomeScreen/> */}
       <FAB
         icon="fingerprint"
         size="medium"
@@ -162,7 +142,7 @@ export default function Vict({ navigation }) {
         ) : (
           // <View style={{backgroundColor:"yellow",flex:1}}>
 
-          <AttendanceList2 attendance={attendance} />
+          <AttendanceList2 attendance={attendance}/>
         )
         // </View>
       }

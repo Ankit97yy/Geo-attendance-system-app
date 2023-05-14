@@ -1,10 +1,9 @@
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Vict from "./Victory";
-import Login from "./Login";
 import Employees from "./Employees";
-import LeaveRequest from "./LeaveRequest";
 import Approvedrequest from "./Approvedrequest";
+import EmpProfile from "./EmpProfile";
   const Tab = createMaterialBottomTabNavigator();
   const BottomTabNav=()=>{
     return(
@@ -15,6 +14,7 @@ import Approvedrequest from "./Approvedrequest";
                   <MaterialCommunityIcons name="home" color={focused?"white":color} size={26}/>
                 ),
                 title: "Home",
+                
               }}
               name="Vict"
               component={Vict}
@@ -44,7 +44,7 @@ import Approvedrequest from "./Approvedrequest";
                 ),
               }}
               name="Employees"
-              component={Employees}
+              component={EmpProfile}
             />
           </Tab.Navigator>
     )

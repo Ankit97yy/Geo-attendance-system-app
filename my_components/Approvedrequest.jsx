@@ -16,6 +16,8 @@ export default function Approvedrequest({navigation}) {
     .then(res=>setleaves(res.data))
   },[])
 
+ 
+
   return (
     <>
     <AppHeader/>
@@ -80,6 +82,6 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 1,
-    backgroundColor: "#0066ff",
+    backgroundColor: "#0088ff",
   },
 })

@@ -15,16 +15,16 @@ const { getDateTime } = require("../dateTimeFunctions.js");
 //     is_admin,
 //   } = req.body;
 //   console.log(
-//     // name,
-//     // email,
-//     // password,
-//     // organizationName,
-//     // latitude,
-//     // longitude,
-//     // start_time,
-//     // end_time,
-//     // location_name,
-//     // branch_location_id
+    // name,
+    // email,
+    // password,
+    // organizationName,
+    // latitude,
+    // longitude,
+    // start_time,
+    // end_time,
+    // location_name,
+    // branch_location_id
 //     req.body
 //   );
 //   const [result] = await db.execute(
@@ -57,14 +57,12 @@ const { getDateTime } = require("../dateTimeFunctions.js");
 
 async function loginUser(req, res) {
   try {
-    console.log("hahaha")
     const email = req.body.email;
     const password = req.body.password;
     const [checkUser] = await db.execute(
       "select employees.id,full_name,branch_location_id,latitude,location_name,longitude,password,is_admin from employees JOIN branch_locations ON employees.branch_location_id=branch_locations.id where email=?",
       [email]
     );
-    console.log(checkUser);
     if (checkUser.length === 0)
       return res.status(401).json({ user: false, password: false });
 
@@ -80,7 +78,7 @@ async function loginUser(req, res) {
       },
       process.env.ACCESS_TOKEN_SECRET
     );
-    res.send({ name: checkUser[0].full_name,accessToken: accessToken,latitude: checkUser[0].latitude,longitude: checkUser[0].longitude,branchName:checkUser[0].location_name});
+    res.send({ name: checkUser[0].full_name,accessToken: accessToken,latitude: checkUser[0].latitude,longitude: checkUser[0].longitude,branchName:checkUser[0].location_name,admin:checkUser[0].is_admin});
   } catch (error) {
     console.log("database ot nuhumal", error);
   }

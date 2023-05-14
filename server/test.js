@@ -6,7 +6,7 @@ const { getDate, getDateTime, getTime } = require("./dateTimeFunctions");
 // console.log(DateTime.fromFormat("2024-04-23", "yyyy-MM-dd").plus({days:10}))
 
 // console.log(DateTime.fromISO('2023-04-19T18:30:00.000Z').toLocaleString({day:'numeric',month:'short'}))
-let dt=DateTime.fromISO(`2023-05-09T18:30:00.000Z`).toFormat("dd-MM-yyyy")
+let dt=DateTime.fromJSDate("2023-04-19T18:30:00.000Z").toFormat("dd-MM-yyyy")
 console.log(dt);
 // const time1= DateTime.fromFormat('09:30:00',"HH:mm:ss")
 // const t2=DateTime.now().diff(time1,'minute').minutes

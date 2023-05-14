@@ -15,7 +15,7 @@ const AppHeader = () => (
   >
     {/* <Appbar.BackAction onPress={() => {}} /> */}
     <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-    <Avatar.Image source={require('../assets/kk.jpg')} style={{marginRight:5}} size={50}/>
+    <Avatar.Image source={require('../assets/kk.jpg')} style={{marginRight:5}} size={45}/>
       <View style={{flexDirection:'row',justifyContent:'space-between',flex:1}}>
         <View>
           <Appbar.Content

@@ -1,96 +1,112 @@
-import { View, FlatList, TouchableOpacity } from "react-native";
-import { List, Divider, Avatar, TextInput } from "react-native-paper";
-import React, { useState } from "react";
-import AppHeader from "./AppHeader";
-import Fab from "./Fab";
+import { useState, useEffect, useRef } from 'react';
+import { Text, View, Button, Platform } from 'react-native';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
 
-export default function Employees({ navigation }) {
-  const [search, setsearch] = useState("");
-  const data = [
-    { id: "1", name: "Aarav Patel", location: "Ahmedabad" },
-    { id: "2", name: "Avni Shah", location: "Surat" },
-    { id: "3", name: "Ishaan Gupta", location: "Jaipur" },
-    { id: "4", name: "Kavya Singh", location: "Delhi" },
-    { id: "5", name: "Aadi Singh", location: "Mumbai" },
-    { id: "6", name: "Riya Reddy", location: "Hyderabad" },
-    { id: "7", name: "Arjun Nair", location: "Chennai" },
-    { id: "8", name: "Advait Rao", location: "Bangalore" },
-    { id: "9", name: "Meera Kapoor", location: "Pune" },
-    { id: "10", name: "Aryan Joshi", location: "Ahmedabad" },
-    { id: "11", name: "Jhanvi Desai", location: "Mumbai" },
-    { id: "12", name: "Kabir Bhatia", location: "Delhi" },
-    { id: "13", name: "Anika Gupta", location: "Hyderabad" },
-    { id: "14", name: "Rudra Singh", location: "Chennai" },
-    { id: "15", name: "Saanvi Kumar", location: "Bangalore" },
-    { id: "16", name: "Kia Patel", location: "Surat" },
-    { id: "17", name: "Arnav Sharma", location: "Pune" },
-    { id: "18", name: "Ishita Singh", location: "Jaipur" },
-    { id: "19", name: "Nivaan Reddy", location: "Hyderabad" },
-    { id: "20", name: "Aadya Nair", location: "Chennai" },
-  ];
 
-  function Item({ title, location }) {
-    return (
-      <List.Item
-        titleStyle={{ fontFamily: "Inter-Black", fontSize: 17 }}
-        title={title}
-        description={location}
-        descriptionStyle={{ color: "grey" }}
-        left={() => (
-          <Avatar.Text
-            label={title.split(" ").map((item) => item.charAt(0))}
-            size={40}
-          />
-        )}
-      />
-    );
-  }
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
-  function renderItem({ item }) {
-    {if(search==="") return(
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate("EmpWorkingHours");
-          console.log(item.id);
-        }}
-      >
-        <Item title={item.name} location={item.location} />
-        <Divider />
-      </TouchableOpacity>
-    )
-    else if(item.name.toLowerCase().includes(search.toLowerCase())) return (
-       <TouchableOpacity
-        onPress={() => {
-          navigation.navigate("EmpWorkingHours");
-          console.log(item.id);
-        }}
-      >
-        <Item title={item.name} location={item.location} />
-        <Divider />
-      </TouchableOpacity>
-    )
+
+// Can use this function below OR use Expo's Push Notification Tool from: https://expo.dev/notifications
+async function sendPushNotification(expoPushToken) {
+  const message = {
+    to: expoPushToken,
+    sound: 'default',
+    title: 'Original Title',
+    body: 'And here is the body!',
+    data: { someData: 'goes here' },
+  };
+
+  let msg=await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(message),
+  });
+  // console.log("🚀 ~ file: Employees.jsx:35 ~ sendPushNotification ~ msg:", msg)
+}
+
+async function registerForPushNotificationsAsync() {
+try {
+  let token;
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
     }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+    token = (await Notifications.getExpoPushTokenAsync()).data;
+    console.log(token);
+  } else {
+    alert('Must use physical device for Push Notifications');
   }
+
+  if (Platform.OS === 'android') {
+    Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+  return token;
+} catch (error) {
+  console.log("🚀 ~ file: Employees.jsx:41 ~ registerForPushNotificationsAsync ~ error:", error)
+  
+}
+}
+
+export default function Employees() {
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
   return (
-    <>
-      <AppHeader />
-      <TextInput
-        style={{ marginHorizontal: 5 }}
-        mode="outlined"
-        placeholder="Search"
-        value={search}
-        onChangeText={(text) => setsearch(text)}
-        left={<TextInput.Icon icon="magnify" />}
-      />
-      <View style={{ flex: 1, marginHorizontal: 10 }}>
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          data={data}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-        />
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
+      <Text>Your expo push token: {expoPushToken}</Text>
+      <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <Text>Title: {notification && notification.request.content.title} </Text>
+        <Text>Body: {notification && notification.request.content.body}</Text>
+        <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
       </View>
-      <Fab screen="AddEmployee" navigation={navigation}/>
-    </>
+      <Button
+        title="Press to Send Notification"
+        onPress={async () => {
+          await sendPushNotification(expoPushToken);
+        }}
+      />
+    </View>
   );
 }

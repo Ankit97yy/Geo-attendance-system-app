@@ -11,5 +11,6 @@ npm-debug.*
 web-build/
 .env
 assets/
+server/uploads
 # macOS
 .DS_Store

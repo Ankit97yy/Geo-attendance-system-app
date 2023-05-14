@@ -34,10 +34,20 @@ export default function MarkAtttendance() {
   };
 
   useEffect(() => {
-    dispatch({
-      type: "checkTime",
-      payload: { startTime: "09:30:00", endTime: "18:30:00" },
-    });
+    // dispatch({
+    //   type: "checkTime",
+    //   payload: { startTime: "09:30:00", endTime: "18:30:00" },
+    // });
+
+    axios
+      .get("branch/getBranch")
+      .then((res) => {
+        dispatch({
+          type: "checkTime",
+          payload: { startTime: res.data.start_time, endTime:res.data.end_time },
+        });
+      })
+      .catch((err) => console.log(err));
     axios
       .get("/attendance/getTodayAttendanceOfAnEmployee")
       .then((res) => {
@@ -53,7 +63,7 @@ export default function MarkAtttendance() {
       .catch((err) => console.log(err));
 
     axios
-      .get("/leave/getOngoingLeave")
+      .get("/leave/getOngoingLeaveOfAnEmployee")
       .then((res) => {
         if (res.data.onLeave) dispatch({ type: "onLeave", payload: true });
         else dispatch({ type: "onLeave", payload: false });
@@ -96,7 +106,6 @@ export default function MarkAtttendance() {
       }
     })();
 
-
     return () => {
       console.log("cleaned");
       console.log(timeId, "clear time");
@@ -134,7 +143,8 @@ export default function MarkAtttendance() {
   ]); //! dependency array is an object!!!
 
   let message;
-  if (state.onLeave) message = <Text style={{ fontSize: 18 }}>You are on leave</Text>;
+  if (state.onLeave)
+    message = <Text style={{ fontSize: 18 }}>You are on leave</Text>;
   else if (state.punchIn || state.punchOut)
     message = <Text style={{ fontSize: 18 }}>You are in office reach</Text>;
   else if (state.donePunchedIn && state.donePunchedOut)

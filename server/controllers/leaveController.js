@@ -1,12 +1,12 @@
 const db = require("../database");
-const { getDateTime } = require("../dateTimeFunctions");
+const { getDateTime, getDate } = require("../dateTimeFunctions");
 const { DateTime } = require("luxon");
 
 
 async function getPendingLeaves(req, res) {
   try {
     const [result] = await db.execute(
-      "SELECT leave_request.id,full_name,reason,start,end FROM leave_request JOIN employees ON leave_request.employee_id=employees.id  WHERE status=?",
+      "SELECT leave_request.id,full_name,reason,start,end,leave_type FROM leave_request JOIN employees ON leave_request.employee_id=employees.id  WHERE status=?",
       ["pending"]
     );
 
@@ -86,15 +86,31 @@ async function getLeaves(req, res) {
   console.log("🚀 ~ file: leaveController.js:78 ~ getLeaves ~ error:", error)
   }
 }
-async function getRemainingLeaves(req, res) {
+async function getRemainingLeavesOfAnEmployee(req, res) {
   try {
-    const emp_id = req.params.emp_id;
+    const emp_id = req.params?.emp_id;
+    
     const [result] = await db.execute(
       "SELECT annual,sick,casual FROM remaining_leaves WHERE emp_id=?",
       [emp_id]
     );
     if (result.length > 0) {
       res.send(result);
+    } else {
+      res.send("no request");
+    }
+  } catch (error) {
+  console.log("🚀 ~ file: leaveController.js:94 ~ getRemainingLeaves ~ error:", error)
+  }
+}
+async function getRemainingLeaves(req, res) {
+  try {
+    const [result] = await db.execute(
+      "SELECT annual,sick,casual FROM remaining_leaves WHERE emp_id=?",
+      [req.id]
+    );
+    if (result.length > 0) {
+      res.send(result[0]);
     } else {
       res.send("no request");
     }
@@ -154,6 +170,23 @@ async function rejectLeave(req, res) {
       'UPDATE leave_request SET status="rejected" WHERE id=?',
       [id]
       );
+      const message = {
+        to: "ExponentPushToken[gIHLw2JcyGJ9wjlp-jI2Dq]",
+        sound: 'default',
+        title: 'Original Title',
+        body: 'And here is the body!',
+        data: { someData: 'goes here' },
+      };
+    
+      let msg=await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Accept-encoding': 'gzip, deflate',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message),
+      });
       res.sendStatus(200)
   } catch (error) {
     console.log(error);
@@ -172,7 +205,7 @@ async function approveLeave(req, res) {
     }
   }
 
-  async function ongoingLeave(req,res){
+  async function ongoingLeaveOfAnEmployee(req,res){
     try {
       const [time]=await db.execute("SELECT start,end FROM leave_request WHERE employee_id =? AND status ='approved'",[req.id])
     if(time.length>0){
@@ -188,8 +221,50 @@ async function approveLeave(req, res) {
       console.log(error)
     }
   }
+  async function ongoingLeaves(req,res){
+    try {
+      let total=0
+      const [leaves]=await db.execute("SELECT start,end FROM leave_request WHERE status ='approved' AND end > ?",[getDate()])
+  
+    leaves.map(item=>{
+      const currentDate=DateTime.now();
+      const startDate=DateTime.fromJSDate(item.start);
+      const endDate=DateTime.fromJSDate(item.end)
+      if(currentDate>=startDate && currentDate<=endDate) total++;
+    })
+    console.log("🚀 ~ file: leaveController.js:203 ~ ongoingLeaves ~ total:", total)
+    res.json({total:total})
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  async function getTotalAllowedLeaves(req,res){
+    try {
+      const [result]= await db.execute("SELECT * FROM total_leaves")
+      res.send(result)
+    } catch (error) {
+      console.log("🚀 ~ file: leaveController.js:247 ~ getTotalAllowedLeaves ~ error:", error)
+      
+    }
+  }
+  async function setTotalAllowedLeaves(req,res){
+    try {
+      const {annual,sick,casual}=req.body;
+      const [result]=await db.execute("UPDATE total_leaves SET annual=?,sick=?,casual=? where id=1",[annual,sick,casual])
+      res.sendStatus(200)
+    } catch (error) {
+      console.log("🚀 ~ file: leaveController.js:247 ~ getTotalAllowedLeaves ~ error:", error)
+      
+    }
+  }
+
+
+
 module.exports = {
   getApprovedLeaves,
+  getTotalAllowedLeaves,
+  setTotalAllowedLeaves,
   getPendingLeaves,
   getLeaves,
   getFulfiledRequests,
@@ -198,7 +273,9 @@ module.exports = {
   updateLeave,
   approveLeave,
   rejectLeave,
-  ongoingLeave,
+  ongoingLeaveOfAnEmployee,
+  ongoingLeaves,
+  getRemainingLeavesOfAnEmployee,
   getRemainingLeaves,
   getAllLeaves,
   getAllLeavesOfAnEmployee

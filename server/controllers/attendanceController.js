@@ -73,7 +73,7 @@ async function getAttendance(req, res) {
     const startDate=req.query.startDate
     const endDate=req.query.endDate
     const [result] = await db.execute(
-      "SELECT id,date,status,in_time,out_time,late_arrival,early_departure FROM attendance WHERE emp_id=? AND date BETWEEN ? AND ?",
+      "SELECT id,date,status,in_time,out_time,late_arrival,early_departure FROM attendance WHERE emp_id=? AND date BETWEEN ? AND ? order by date desc",
       [employee_id,startDate,endDate]
     );
     res.send(result);
@@ -85,7 +85,7 @@ async function getAttendanceOfAnEmployee(req, res) {
   try {
     const employee_id = req.params.id;
     const [result] = await db.execute(
-      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time,late_arrival,early_departure FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id WHERE emp_id=?",
+      "SELECT attendance.id,location_name,date,full_name,status,in_time,out_time,late_arrival,early_departure FROM attendance JOIN employees ON attendance.emp_id=employees.id JOIN branch_locations on employees.branch_location_id=branch_locations.id WHERE emp_id=? ORDER BY attendance.date desc",
       [employee_id]
     );
     res.send(result);
@@ -130,7 +130,7 @@ async function getWorkingHours(req, res) {
     const startdate = req.query.startDate;
     const endDate = req.query.endDate;
     const [result] = await db.execute(
-      "SELECT id,in_time,out_time,date FROM attendance WHERE emp_id=? AND date BETWEEN ? AND ?",
+      "SELECT id,in_time,out_time,date FROM attendance WHERE emp_id=? AND date BETWEEN ? AND ? ORDER BY date asc",
       [id, startdate, endDate]
     );
     res.send(result);

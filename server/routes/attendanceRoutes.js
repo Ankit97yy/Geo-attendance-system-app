@@ -7,7 +7,7 @@ const express=require('express');
 const router=express.Router()
 
 router.get('/getAttendance/',getAttendance);
-router.get('/getAttendance/:id',giveAccessTo('admin'),getAttendanceOfAnEmployee);
+router.get('/getAttendanceOfAnEmployee/:id',giveAccessTo('admin'),getAttendanceOfAnEmployee);
 router.get('/getAllAttendances',giveAccessTo('admin'),getAllAttendances);
 router.get('/getWorkingHours/:id',giveAccessTo('admin'),getWorkingHours);
 router.get("/getTodayAttendanceOfAnEmployee",todayAttendanceOfAnEmployee)

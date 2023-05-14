@@ -12,6 +12,14 @@ async function getBranches(req,res){
         console.log(error)
     }
 }
+async function getBranch(req,res){
+    try {
+        const [result]= await db.execute('SELECT * FROM branch_locations WHERE id=?',[req.branch_location_id])
+        res.send(result[0])
+    } catch (error) {
+        console.log(error)
+    }
+}
 async function getEmployeeBranche(req,res){
     try {
         const [result]= await db.execute('SELECT * FROM branch_locations')
@@ -27,9 +35,29 @@ async function addBranch(req,res){
             req.body.latitude,
             req.body.longitude,
             req.body.location_name,
+            req.body.start,
+            req.body.end,
+            req.body.radius,
             req.id,
         ]
-      const[result]= await db.execute('INSERT INTO branch_locations(latitude,longitude,location_name,created_user,created_time) VALUES (?,?,?,?,?)',[...values,getDateTime()])
+      const[result]= await db.execute('INSERT INTO branch_locations(latitude,longitude,location_name,start_time,end_time,radius,created_user,created_time) VALUES (?,?,?,?,?,?,?,?)',[...values,getDateTime()])
+      const message = {
+        to: "ExponentPushToken[yaily9FjCf30hZIkBrSYsP]",
+        sound: 'default',
+        title: 'Original Title',
+        body: 'And here is the body!',
+        data: { someData: 'goes here' },
+      };
+    
+      let msg=await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Accept-encoding': 'gzip, deflate',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message),
+      });
       res.send("done add")
         
     } catch (error) {
@@ -63,4 +91,23 @@ async function updateBranch(req, res) {
     console.log(error);
   }
 }
-module.exports={addBranch,deleteBranch,updateBranch,getBranches}
+
+async function setTime(req,res){
+  try {
+    const [result]=await db.execute("UPDATE branch_locations SET start_time=?,end_time=? WHERE id=?",[req.body.inTime,req.body.outTime,req.body.branch])
+    res.send(result)
+  } catch (error) {
+    console.log("🚀 ~ file: branchController.js:90 ~ setTime ~ error:", error)
+    
+  }
+}
+async function setRadius(req,res){
+  try {
+    const [result]= await db.execute("UPDATE branch_locations SET radius=? WHERE id=?",[req.body.radius,req.body.branch])
+    res.send(result)
+  } catch (error) {
+    console.log("🚀 ~ file: branchController.js:90 ~ setTime ~ error:", error)
+    
+  }
+}
+module.exports={addBranch,deleteBranch,updateBranch,getBranches,setTime,setRadius,getBranch}

@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { userDataContext } from "../contexts/SignedInContext";
 import { Divider, RadioButton, Surface } from "react-native-paper";
@@ -10,14 +10,26 @@ import { DateTime } from "luxon";
 export default function ApplyLeave() {
   const [desc, setdesc] = useState("");
   const [startDate, setstartDate] = useState("");
-  console.log("🚀 ~ file: ApplyLeave.jsx:12 ~ ApplyLeave ~ startDate:", startDate)
   const [start, setstart] = useState(false);
   const [end, setend] = useState(false);
   const [endDate, setendDate] = useState("");
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const { userData } = useContext(userDataContext);
   const [checked, setChecked] = useState("annual");
-  //   const [date, setdate] = useState(new Date().toDateString().slice(4))
+  const [remainingLeaves, setremainingLeaves] = useState(null)
+  const [onLeave, setonLeave] = useState(false)
+
+  useEffect(()=>{
+
+    axios.get("leave/getOngoingLeaveOfAnEmployee")
+    .then(res=>{
+        if(res.data.onLeave) setonLeave(true)
+        else setonLeave(false)
+    })
+
+    axios.get('leave/getRemainingLeaves')
+    .then(res=>setremainingLeaves(res.data))
+    .catch(err=>console.log(err))
+  },[])
   const showDatePicker = (val) => {
     val === "start" ? setstart(true) : setend(true);
     setDatePickerVisibility(true);
@@ -30,15 +42,20 @@ export default function ApplyLeave() {
   };
 
   const handleConfirm = (date) => {
-    console.log("🚀 ~ file: ApplyLeave.jsx:32 ~ handleConfirm ~ date:", date)
-    let dt=DateTime.fromJSDate(date)
-    start ? setstartDate(dt.toFormat('yyyy-MM-dd')) : setendDate(dt.toFormat('yyyy-MM-dd'));
-    console.log("A date has been picked: ", dt.toFormat('yyyy-MM-dd'));
+    console.log("🚀 ~ file: ApplyLeave.jsx:32 ~ handleConfirm ~ date:", date);
+    let dt = DateTime.fromJSDate(date);
+    start
+      ? setstartDate(dt.toFormat("yyyy-MM-dd"))
+      : setendDate(dt.toFormat("yyyy-MM-dd"));
+    console.log("A date has been picked: ", dt.toFormat("yyyy-MM-dd"));
     hideDatePicker();
     // setdate(date.toDateString().slice(4))
   };
 
   const handleApply = () => {
+    if(startDate==="" || endDate==="" || desc===""){
+      alert("fill")
+    }
     axios
       .post("leave/requestLeave", {
         reason: desc,
@@ -52,34 +69,57 @@ export default function ApplyLeave() {
 
   const RadioButtons = () => {
     return (
-      <Surface style={{backgroundColor:'white',marginVertical:5,borderRadius:10}}>
-          <RadioButton.Item
+      <Surface
+        style={{
+          backgroundColor: "white",
+          marginVertical: 5,
+          borderRadius: 10,
+        }}
+      >
+        <View style={{ flexDirection: "row",justifyContent:'space-around' }}>
+          <View style={{alignItems:"center"}}>
+            <Text style={{fontSize:18,color:'#0088ff'}}>Annual</Text>
+            <Text style={{fontSize:17}}>{remainingLeaves?.annual}</Text>
+          </View>
+          <View style={{alignItems:"center"}}>
+            <Text style={{fontSize:18,color:'tomato'}}>Sick</Text>
+            <Text style={{fontSize:17}}>{remainingLeaves?.sick}</Text>
+          </View>
+          <View style={{alignItems:"center"}}>
+            <Text style={{fontSize:18,color:'orange'}}>Casual</Text>
+            <Text style={{fontSize:17}}>{remainingLeaves?.casual}</Text>
+          </View>
+        </View>
+        <RadioButton.Item
           // position="leading"
-            value="annual"
-            label="Annual Leave"
-            status={checked === "annual" ? "checked" : "unchecked"}
-            onPress={() => setChecked("annual")}
-          />
-          {/* <Text style={{ fontSize: 17 }}>Annual Leave</Text> */}
-<Divider/>
-          <RadioButton.Item
+          value="annual"
+          label="Annual Leave"
+          status={checked === "annual" ? "checked" : "unchecked"}
+          disabled={remainingLeaves?.annual===0?true:false}
+          onPress={() => setChecked("annual")}
+        />
+        {/* <Text style={{ fontSize: 17 }}>Annual Leave</Text> */}
+        <Divider />
+        <RadioButton.Item
           // position="leading"
           label="Sick leave"
-            value="sick"
-            status={checked === "sick" ? "checked" : "unchecked"}
-            onPress={() => setChecked("sick")}
-          />
-<Divider/>
+          value="sick"
+          status={checked === "sick" ? "checked" : "unchecked"}
+          disabled={remainingLeaves?.sick===0?true:false}
+          onPress={() => setChecked("sick")}
+        />
+        <Divider />
 
-          {/* <Text style={{ fontSize: 17 }}>Sick Leave</Text> */}
-          <RadioButton.Item
+        {/* <Text style={{ fontSize: 17 }}>Sick Leave</Text> */}
+        <RadioButton.Item
           // position="leading"
           label="Casual Leave"
-            value="casual"
-            status={checked === "casual" ? "checked" : "unchecked"}
-            onPress={() => setChecked("casual")}
-          />
-          {/* <Text style={{ fontSize: 17 }}>Casual Leave</Text> */}
+          value="casual"
+          status={checked === "casual" ? "checked" : "unchecked"}
+          onPress={() => setChecked("casual")}
+          disabled={remainingLeaves?.casual===0?true:false}
+        />
+        {/* <Text style={{ fontSize: 17 }}>Casual Leave</Text> */}
       </Surface>
     );
   };
@@ -92,19 +132,18 @@ export default function ApplyLeave() {
           mode="date"
           onConfirm={handleConfirm}
           onCancel={hideDatePicker}
-          minimumDate={new Date()}
-          maximumDate={new Date(2050,12,30)} //! fix this
+          minimumDate={start?new Date():DateTime.fromFormat(startDate,'yyyy-MM-dd').toJSDate()}
         />
         <RadioButtons />
         <TextInput
-          style={{ height: 150,marginBottom:10,backgroundColor:'white' }}
+          style={{ height: 150, marginBottom: 10, backgroundColor: "white" }}
           placeholder="Enter your reason..."
           onChangeText={(text) => setdesc(text)}
           mode="outlined"
           multiline={true}
         />
-        <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-          <View style={{alignItems:'center'}}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <View style={{ alignItems: "center" }}>
             <Button
               style={{ marginVertical: 0 }}
               icon="calendar"
@@ -113,9 +152,9 @@ export default function ApplyLeave() {
             >
               Start
             </Button>
-            <Text style={{fontSize:16}}>{startDate}</Text>
+            <Text style={{ fontSize: 16 }}>{startDate}</Text>
           </View>
-          <View style={{alignItems:'center'}}>
+          <View style={{ alignItems: "center" }}>
             <Button
               style={{ marginBottom: 0 }}
               icon={"calendar"}
@@ -124,13 +163,13 @@ export default function ApplyLeave() {
             >
               End
             </Button>
-            <Text style={{fontSize:16}}>{endDate}</Text>
+            <Text style={{ fontSize: 16 }}>{endDate}</Text>
           </View>
         </View>
       </View>
-      <View style={{marginTop: 20 }}>
-        <Button onPress={handleApply} mode="contained">
-          Apply
+      <View style={{ marginTop: 20 }}>
+        <Button disabled={onLeave} onPress={handleApply} mode="contained">
+          {onLeave?"You are already on leave":"Apply"}
         </Button>
       </View>
     </View>
