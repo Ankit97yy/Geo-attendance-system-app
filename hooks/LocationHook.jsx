@@ -15,7 +15,7 @@ export const initialState = {
   onLeave: true,
   donePunchedIn: false,
   donePunchedOut: false,
-  inTime: false,
+  inTime: true,
   branchLocation: {
     latitude: 0,
     longitude: 0,

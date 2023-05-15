@@ -10,13 +10,18 @@ import { StyleSheet } from "react-native";
 
 export default function Approvedrequest({navigation}) {
   const [leaves, setleaves] = useState([])
-  console.log("🚀 ~ file: Approvedrequest.jsx:10 ~ Approvedrequest ~ leaves:", leaves)
+  console.log("🚀 ~ file: Approvedrequest.jsx:13 ~ Approvedrequest ~ leaves:", leaves)
+  const [loading, setloading] = useState(false)
+  const [refresh, setrefresh] = useState(true)
   useEffect(()=>{
+    setloading(true)
     axios.get(`/leave/getAllLeavesOfAnEmployee`)
-    .then(res=>setleaves(res.data))
-  },[])
+    .then(res=>{
+      setleaves(res.data)
+      setloading(false)
+    })
+  },[refresh])
 
- 
 
   return (
     <>
@@ -69,6 +74,8 @@ export default function Approvedrequest({navigation}) {
         );
       }}
       keyExtractor={(item) => item.id.toString()}
+      onRefresh={()=>setrefresh(!refresh)}
+      refreshing={loading}
       />
       </>
   );

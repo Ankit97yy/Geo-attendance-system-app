@@ -4,6 +4,7 @@ import Vict from "./Victory";
 import Employees from "./Employees";
 import Approvedrequest from "./Approvedrequest";
 import EmpProfile from "./EmpProfile";
+import MenuItem from "./MenuItem";
   const Tab = createMaterialBottomTabNavigator();
   const BottomTabNav=()=>{
     return(
@@ -44,7 +45,7 @@ import EmpProfile from "./EmpProfile";
                 ),
               }}
               name="Employees"
-              component={EmpProfile}
+              component={MenuItem}
             />
           </Tab.Navigator>
     )
