@@ -13,6 +13,7 @@ import {
 import { Button, TextInput } from "react-native-paper";
 import { DateTime } from "luxon";
 import Lottie from "lottie-react-native";
+import { socket } from "../App";
 export default function ApplyLeave() {
   const [desc, setdesc] = useState("");
   const [startDate, setstartDate] = useState("");
@@ -24,7 +25,6 @@ export default function ApplyLeave() {
   const [remainingLeaves, setremainingLeaves] = useState(null);
   const [onLeave, setonLeave] = useState(false);
   const [showAlert, setshowAlert] = useState(false);
-
   useEffect(() => {
     axios.get("leave/getOngoingLeaveOfAnEmployee").then((res) => {
       if (res.data.onLeave) setonLeave(true);
@@ -59,18 +59,18 @@ export default function ApplyLeave() {
   };
 
   const handleApply = () => {
-    // if(startDate==="" || endDate==="" || desc===""){
-    //   alert("fill")
-    // }
-    // axios
-    //   .post("leave/requestLeave", {
-    //     reason: desc,
-    //     start: startDate,
-    //     end: endDate,
-    //     type: checked,
-    //   })
-    //   .then((res) => console.log(res.data))
-    //   .catch((err) => console.log(err));
+    if(startDate==="" || endDate==="" || desc===""){
+      alert("fill")
+    }
+    axios
+      .post("leave/requestLeave", {
+        reason: desc,
+        start: startDate,
+        end: endDate,
+        type: checked,
+      })
+      .then((res) => socket.emit("APPLY_LEAVE","test"))
+      .catch((err) => console.log(err));
     setshowAlert(true);
   };
 

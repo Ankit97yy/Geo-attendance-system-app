@@ -9,6 +9,7 @@ import Lottie from "lottie-react-native";
 import haversine from "./test";
 import moment from "moment/moment";
 import axios from "axios";
+import { socket } from "../App";
 import { userDataContext } from "../contexts/SignedInContext";
 
 export default function MarkAtttendance() {
@@ -20,6 +21,7 @@ export default function MarkAtttendance() {
       .post("attendance/addAttendance")
       .then((res) => {
         if (res.data.attendance) dispatch({ type: "handlePunchIn" });
+        socket.emit("MARK_ATTENDANCE","attendance marked")
       })
       .catch((err) => console.log(err));
   };
@@ -29,6 +31,8 @@ export default function MarkAtttendance() {
       .post("attendance/addAttendance")
       .then((res) => {
         if (res.data.attendance) dispatch({ type: "handlePunchOut" });
+        socket.emit("MARK_ATTENDANCE","attendance marked")
+
       })
       .catch((err) => console.log(err));
   };

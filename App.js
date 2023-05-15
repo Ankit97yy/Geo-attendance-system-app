@@ -14,8 +14,14 @@ import 'intl';
 import 'intl/locale-data/jsonp/en';
 import axios from "axios";
 import { colors } from "./my_components/coolrs";
-// import AppHeader from './my_components/AppHeader';
+import io from "socket.io-client";
 
+// import AppHeader from './my_components/AppHeader';
+export const socket = io("http://192.168.29.133:3001");
+socket.on("connect", () => {
+  console.log(socket.id); // x8WIv7-mJelg7on_ALbx
+});
+console.log("helooooooooooo")
 export default function App() {
   axios.defaults.baseURL = "http://192.168.29.133:3001/";
   const [userData, setuserData] = useState({

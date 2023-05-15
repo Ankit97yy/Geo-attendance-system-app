@@ -211,7 +211,6 @@ async function approveLeave(req, res) {
     if(time.length>0){
     const currentDate=DateTime.now();
     const startDate=DateTime.fromJSDate(time[0].start);
-    console.log("🚀 ~ file: leaveController.js:181 ~ ongoingLeave ~ startDate:", startDate)
     const endDate=DateTime.fromJSDate(time[0].end)
     if(currentDate>=startDate && currentDate<=endDate) return res.status(200).json({onLeave:true})
     else return res.status(200).json({onLeave:false})

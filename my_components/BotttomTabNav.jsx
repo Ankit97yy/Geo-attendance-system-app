@@ -45,7 +45,7 @@ import MenuItem from "./MenuItem";
                 ),
               }}
               name="Employees"
-              component={MenuItem}
+              component={Employees}
             />
           </Tab.Navigator>
     )
