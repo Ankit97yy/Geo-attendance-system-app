@@ -1,15 +1,8 @@
 import * as React from 'react';
 import { View } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import { Button, Menu, Divider, Provider } from 'react-native-paper';
 import { socket } from '../App';
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+
 
 const MenuItem = () => {
   const [visible, setVisible] = React.useState(false);
@@ -27,8 +20,6 @@ const MenuItem = () => {
   };
 
   const closeMenu = () => setVisible(false);
-  socket.on("NOTIFY",()=>openMenu())
-
   return (
     <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
         <Button onPress={openMenu}>Show menu</Button>

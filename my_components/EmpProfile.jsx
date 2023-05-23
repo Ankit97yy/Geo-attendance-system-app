@@ -4,14 +4,14 @@ import AppHeader from "./AppHeader";
 import axios from "axios";
 import { DateTime } from "luxon";
 import { VictoryBar, VictoryChart, VictoryTheme } from "victory-native";
-import { Button, Surface } from "react-native-paper";
+import { Button, Divider, Surface } from "react-native-paper";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 export default function EmpProfile() {
   const [currentDate, setcurrentDate] = useState(DateTime.now());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [attendance, setattendance] = useState([]);
-  console.log("🚀 ~ file: EmpProfile.jsx:13 ~ EmpProfile ~ attendance:", attendance)
-  const [data, setdata] = useState([])
+  const [remainingLeaves, setremainingLeaves] = useState(null);
+  const [data, setdata] = useState([]);
   const fetchdata = (source) => {
     axios
       .get("attendance/getAttendance", {
@@ -35,10 +35,10 @@ export default function EmpProfile() {
             day: "numeric",
             month: "short",
           });
-          data.push({date:date,hours:hour})
+          data.push({ date: date, hours: hour });
         });
-        setdata(data)
-        setattendance(res.data)
+        setdata(data);
+        setattendance(res.data);
       })
       .catch((error) => {
         if (axios.isCancel(error)) {
@@ -48,10 +48,14 @@ export default function EmpProfile() {
         }
       });
   };
+
   useEffect(() => {
     const source = axios.CancelToken.source();
     fetchdata(source);
-
+    axios
+      .get("leave/getRemainingLeaves")
+      .then((res) => setremainingLeaves(res.data))
+      .catch((err) => console.log(err));
     return () => source.cancel("user cancelled the request");
   }, [currentDate]);
   // const data = [
@@ -78,61 +82,102 @@ export default function EmpProfile() {
         onCancel={hideDatePicker}
         maximumDate={new Date(2050, 12, 30)}
       />
-      <View
-        style={{
-          borderColor: "grey",
-          backgroundColor: "white",
-          padding: 5,
-          marginBottom: 5,
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}
-      >
-        <Button
-          icon="chevron-left-circle"
-          onPress={() => {
-            setcurrentDate((prev) => prev.minus({ month: 1 }));
-          }}
-        ></Button>
-        <Button
-          buttonColor="#f5f5f5"
-          icon="calendar-month"
-          onPress={() => setDatePickerVisibility(true)}
-        >
-          {currentDate.toLocaleString({ month: "long", year: "2-digit" })}
-        </Button>
-        <Button
-          icon="chevron-right-circle"
-          onPress={() => setcurrentDate((prev) => prev.plus({ month: 1 }))}
-        ></Button>
-      </View>
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <View style={{ marginHorizontal: 5 }}>
         <Surface
           style={{
-            width: "45%",
-            height: 150,
-            borderRadius: 10,
             backgroundColor: "white",
+            marginBottom: 5,
+            borderRadius: 5,
+            marginVertical: 10,
           }}
         >
-          <Text>
-            Present:{attendance.filter((item) => item.status === "present").length}
+          <Text style={{ fontSize: 18, alignSelf: "center" }}>
+            Remaining Leaves
           </Text>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-around" }}
+          >
+            <View style={{ alignItems: "center" }}>
+              <Text style={{ fontSize: 18, color: "#0088ff" }}>Annual</Text>
+              <Text style={{ fontSize: 17 }}>{remainingLeaves?.annual}</Text>
+            </View>
+            <View style={{ alignItems: "center" }}>
+              <Text style={{ fontSize: 18, color: "tomato" }}>Sick</Text>
+              <Text style={{ fontSize: 17 }}>{remainingLeaves?.sick}</Text>
+            </View>
+            <View style={{ alignItems: "center" }}>
+              <Text style={{ fontSize: 18, color: "orange" }}>Casual</Text>
+              <Text style={{ fontSize: 17 }}>{remainingLeaves?.casual}</Text>
+            </View>
+          </View>
         </Surface>
         <Surface
           style={{
-            width: "45%",
-            height: 150,
-            borderRadius: 10,
             backgroundColor: "white",
+            borderRadius: 5,
+            marginVertical: 5,
           }}
         >
-          <Text>Absent:{attendance.filter((item) => item.status === "absent").length}</Text>
+          <View
+            style={{
+              borderRadius: 5,
+              // borderColor: "grey",
+              backgroundColor: "white",
+              padding: 5,
+              // marginBottom: 5,
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <Button
+              icon="chevron-left-circle"
+              onPress={() => {
+                setcurrentDate((prev) => prev.minus({ month: 1 }));
+              }}
+            ></Button>
+            <Button
+              buttonColor="#f5f5f5"
+              icon="calendar-month"
+              onPress={() => setDatePickerVisibility(true)}
+            >
+              {currentDate.toLocaleString({ month: "long", year: "2-digit" })}
+            </Button>
+            <Button
+              icon="chevron-right-circle"
+              onPress={() => setcurrentDate((prev) => prev.plus({ month: 1 }))}
+            ></Button>
+          </View>
+          {/* <Surface style={{ backgroundColor: "white" }}> */}
+          <Text style={{ fontSize: 18, alignSelf: "center" }}>
+            Working Hours
+          </Text>
+          <VictoryChart width={350} theme={VictoryTheme.material}>
+            <VictoryBar barWidth={15} data={data} x="date" y="hours" />
+          </VictoryChart>
+        </Surface>
+        <Surface style={{backgroundColor:'white'}}>
+          <Text style={{ fontSize: 20, alignSelf: "center" }}>
+            Total Attendance
+          </Text>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-around" }}
+          >
+            <View style={{ alignItems: "center" }}>
+              <Text style={{ fontSize: 18, color: "#0088ff" }}>Present</Text>
+              <Text style={{ fontSize: 17 }}>
+                {attendance.filter((item) => item.status === "present").length}
+              </Text>
+            </View>
+            <View style={{ alignItems: "center" }}></View>
+            <View style={{ alignItems: "center" }}>
+              <Text style={{ fontSize: 18, color: "tomato" }}>Absent</Text>
+              <Text style={{ fontSize: 17 }}>
+                {attendance.filter((item) => item.status === "absent").length}
+              </Text>
+            </View>
+          </View>
         </Surface>
       </View>
-      <VictoryChart width={350} theme={VictoryTheme.material}>
-        <VictoryBar data={data} x="date" y="hours" />
-      </VictoryChart>
     </View>
   );
 }

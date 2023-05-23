@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, FlatList } from "react-native";
 import * as SecureStore from "expo-secure-store";
 // import { SafeAreaView, FlatList, StatusBar } from "react-native";
 import { useFonts } from "expo-font";
-import { FAB } from "react-native-paper";
+import { FAB, Surface } from "react-native-paper";
 import * as SplashScreen from "expo-splash-screen";
 import { Button } from "react-native-paper";
 import AppHeader from "./AppHeader";
@@ -14,40 +14,17 @@ import axios from "axios";
 import AttendanceList2 from "./AttendanceList2";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { setStatusBarStyle } from "expo-status-bar";
+import { socket } from "../App";
 
 SplashScreen.preventAutoHideAsync();
 export default function Vict({ navigation }) {
   setStatusBarStyle("light");
+  console.log("date changed");
   const { setuserData, userData } = useContext(userDataContext);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [currentDate, setcurrentDate] = useState(DateTime.now());
   const [attendance, setattendance] = useState([]);
 
-  const fetchdata=(source)=>{
-    console.log("fetch")
-    axios
-    .get("attendance/getAttendance", {
-      cancelToken:source.token,
-      params: {
-        startDate: `${currentDate.startOf('month').toFormat('yyyy-MM-dd')}`,
-        endDate: `${currentDate.endOf('month').toFormat('yyyy-MM-dd')}`,
-      },
-    })
-    .then((res) => setattendance(res.data))
-    .catch((error) => {
-      if (axios.isCancel(error)) {
-        console.log('Request canceled:', error.message);
-      } else {
-        console.log('Error:', error.message);
-      }
-    });
-  }
-  useEffect(() => {
-    const source = axios.CancelToken.source();
-    fetchdata(source)
-
-      return ()=>source.cancel('user cancelled the request')
-  }, [currentDate]);
   const [fontsLoaded] = useFonts({
     "Inter-Black": require("../assets/fonts/InterDesktop/Inter-Medium.otf"),
   });
@@ -75,25 +52,24 @@ export default function Vict({ navigation }) {
   };
 
   const handleConfirm = (date) => {
-    let dt=DateTime.fromJSDate(date)
-    setcurrentDate(dt)
+    let dt = DateTime.fromJSDate(date);
+    setcurrentDate(dt);
     hideDatePicker();
   };
   const hideDatePicker = () => {
     setDatePickerVisibility(false);
   };
 
-
   return (
     <View style={styles.container}>
       <AppHeader />
       <DateTimePickerModal
-          isVisible={isDatePickerVisible}
-          mode="date"
-          onConfirm={handleConfirm}
-          onCancel={hideDatePicker}
-          maximumDate={new Date(2050,12,30)}
-        />
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleConfirm}
+        onCancel={hideDatePicker}
+        maximumDate={new Date(2050, 12, 30)}
+      />
       <FAB
         icon="fingerprint"
         size="medium"
@@ -101,16 +77,12 @@ export default function Vict({ navigation }) {
         color="white"
         onPress={() => navigation.navigate("MarkAttendance")}
       />
-
-      {/* <View style={{borderColor:'grey',backgroundColor:'white',padding:5,marginBottom:5}}>
-      <FlatList
-        data={months}
-        showsHorizontalScrollIndicator={false}
-        horizontal
-        renderItem={({ item }) => <Item title={item} />}
-        keyExtractor={(item) => item.id}
-        />
-        </View> */}
+      {/* <Surface style={{backgroundColor:'white',marginVertical:5}} >
+        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+          <Button mode="contained">Punch in</Button>
+          <Button mode="contained">Punch out</Button>
+        </View>
+      </Surface> */}
       <View
         style={{
           borderColor: "grey",
@@ -121,31 +93,25 @@ export default function Vict({ navigation }) {
           justifyContent: "space-between",
         }}
       >
-        <Button icon="chevron-left-circle" onPress={()=>{
-          setcurrentDate(prev=>prev.minus({month:1}))
-        }}></Button>
-        <Button buttonColor="#f5f5f5" icon="calendar-month" onPress={()=>setDatePickerVisibility(true)}>{currentDate.toLocaleString({month:'long',year:'2-digit'})}</Button>
-        <Button icon="chevron-right-circle" onPress={()=>setcurrentDate(prev=>prev.plus({month:1}))}></Button>
+        <Button
+          icon="chevron-left-circle"
+          onPress={() => {
+            setcurrentDate((prev) => prev.minus({ month: 1 }));
+          }}
+        ></Button>
+        <Button
+          buttonColor="#f5f5f5"
+          icon="calendar-month"
+          onPress={() => setDatePickerVisibility(true)}
+        >
+          {currentDate.toLocaleString({ month: "long", year: "2-digit" })}
+        </Button>
+        <Button
+          icon="chevron-right-circle"
+          onPress={() => setcurrentDate((prev) => prev.plus({ month: 1 }))}
+        ></Button>
       </View>
-
-      {
-        attendance.length === 0 ? (
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              height: "80%",
-            }}
-          >
-            <Text style={{ fontSize: 20 }}>No Records</Text>
-          </View>
-        ) : (
-          // <View style={{backgroundColor:"yellow",flex:1}}>
-
-          <AttendanceList2 attendance={attendance}/>
-        )
-        // </View>
-      }
+      <AttendanceList2 currentDate={currentDate} />
     </View>
   );
 }

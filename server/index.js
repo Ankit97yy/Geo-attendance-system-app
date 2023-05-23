@@ -24,11 +24,7 @@ app.use("/employee", empRoutes);
 app.use("/attendance", attendanceRoutes);
 app.use("/leave", leaveRoutes);
 app.use("/branch", branchRoutes);
-// const httpServer = require("http").createServer(app);
-const options = {
-  /* ... */
-};
-// const io = require("socket.io")(httpServer);
+
 const httpServer = createServer(app);
 const io = new Server(httpServer);
 
@@ -36,16 +32,16 @@ io.on("connection", (socket) => {
   console.log("connected socket", socket.id);
   socket.on("test",(data)=>{
     console.log(data,"passed")
-    io.emit("NOTIFY","notify")
+    io.volatile.emit("NOTIFY","notify")
   })
   socket.on("APPLY_LEAVE",(data)=>{
     console.log(data,"leave")
-    io.emit("REFRESH_LEAVE","test")
+    io.volatile.emit("REFRESH_LEAVE","test")
 
   })
   socket.on("MARK_ATTENDANCE",(data)=>{
     console.log(data,"attendance")
-    io.emit("ATTENDANCE_RECIEVED","test")
+    io.volatile.emit("ATTENDANCE_RECIEVED","test")
 
   })
 });

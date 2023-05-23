@@ -44,6 +44,7 @@ export default function LogIn() {
               latitude: res.data.latitude,
               longitude: res.data.longitude,
               branch_location_name: res.data.branchName,
+              profile_picture:res.data.profile_picture
             };
           });
 

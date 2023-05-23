@@ -68,9 +68,8 @@ async function addBranch(req,res){
 async function deleteBranch(req,res){
     try {
         const branch_id=req.params.id;
-        const [checkAdmin]= await db.execute('SELECT branch_location_id FROM employees WHERE is_admin="yes"')
-       checkAdmin.sort((a,b)=>a.branch_location_id-b.branch_location_id)
-       if(checkAdmin[0].branch_location_id===checkAdmin[checkAdmin.length-1].branch_location) return res.status(401).json({data:"can not delete a branch that has admin"})
+        const [checkAdmin]= await db.execute('SELECT branch_location_id FROM employees WHERE is_admin="yes" AND branch_location_id <> ?',[branch_id])
+       if(checkAdmin.length===0) return res.status(401).json({data:"can not delete the branch that has admin"})
         const[result]= await db.execute('DELETE FROM branch_locations WHERE id=?',[branch_id])
         res.send("done delete")
     } catch (error) {

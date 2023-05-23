@@ -4,34 +4,40 @@ import React, { memo, useEffect, useState } from "react";
 import { View, Text, FlatList } from "react-native";
 import { Surface } from "react-native-paper";
 
-function AttendanceList2({ attendance }) {
-
+function AttendanceList2({ currentDate }) {
   const [loading, setloading] = useState(false);
-
-  const [attendanceData, setattendanceData] = useState(null);
-  const fetchdata = () => {
-    setloading(true);
+  const [attendance, setattendance] = useState([]);
+  const fetchdata = (source) => {
+    console.log("fetch");
     axios
       .get("attendance/getAttendance", {
+        cancelToken: source?.token,
         params: {
-          startDate: `${DateTime.fromISO(attendance[0].date)
-            .startOf("month")
-            .toFormat("yyyy-MM-dd")}`,
-          endDate: `${DateTime.fromISO(attendance[0].date)
-            .endOf("month")
-            .toFormat("yyyy-MM-dd")}`,
+          startDate: `${currentDate.startOf("month").toFormat("yyyy-MM-dd")}`,
+          endDate: `${currentDate.endOf("month").toFormat("yyyy-MM-dd")}`,
         },
       })
-      .then((res) => setattendanceData(res.data))
+      .then((res) => setattendance(res.data))
       .catch((error) => {
-        console.log("Error:", error.message);
-      })
-      .finally(() => setloading(false));
+        if (axios.isCancel(error)) {
+          console.log("Request canceled:", error.message);
+        } else {
+          console.log("Error:", error.message);
+        }
+      });
   };
+  useEffect(() => {
+    console.log("rendered")
+    const source = axios.CancelToken.source();
+    fetchdata(source);
+
+    return () => source.cancel("user cancelled the request");
+  }, [currentDate]);
+
   const RenderList = memo(({ data }) => {
     const dateObject = DateTime.fromISO(data.date);
     const date = dateObject.toFormat("dd");
-    console.log("🚀 ~ file: AttendanceList2.jsx:18 ~ RenderList ~ date:", date)
+    console.log("🚀 ~ file: AttendanceList2.jsx:18 ~ RenderList ~ date:", date);
     const day = dateObject.toFormat("ccc");
     const punchIn =
       data.status === "present"
@@ -140,8 +146,9 @@ function AttendanceList2({ attendance }) {
     );
   });
 
-  return (
-    <FlatList
+  const List = memo(({ attendance }) => {
+    return (
+      <FlatList
         data={attendance}
         contentContainerStyle={{ paddingBottom: 0 }}
         renderItem={({ item }) => <RenderList data={item} />}
@@ -149,7 +156,12 @@ function AttendanceList2({ attendance }) {
         onRefresh={fetchdata}
         refreshing={loading}
       />
-  );
+    );
+  }, (prevProps, nextProps) => {
+    return prevProps.attendance === nextProps.attendance;
+  });
+
+  return <List attendance={attendance} />;
 }
 
-export default memo(AttendanceList2);
+export default AttendanceList2;

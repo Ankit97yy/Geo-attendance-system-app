@@ -15,22 +15,25 @@ import 'intl/locale-data/jsonp/en';
 import axios from "axios";
 import { colors } from "./my_components/coolrs";
 import io from "socket.io-client";
+import * as Notifications from 'expo-notifications';
+
 
 // import AppHeader from './my_components/AppHeader';
-export const socket = io("http://192.168.29.133:3001");
+export const socket = io("http://192.168.168.4:3001");
 socket.on("connect", () => {
   console.log(socket.id); // x8WIv7-mJelg7on_ALbx
 });
-console.log("helooooooooooo")
+
 export default function App() {
-  axios.defaults.baseURL = "http://192.168.29.133:3001/";
+  axios.defaults.baseURL = "http://192.168.168.4:3001/";
   const [userData, setuserData] = useState({
     fullName: "",
     branch_location_name: "",
       latitude:0,
       longitude:0,
     isSignedIn: false,
-    accessToken:null
+    accessToken:null,
+    profile_picture:""
   });
   useEffect(() => {
     async function getToken(key) {

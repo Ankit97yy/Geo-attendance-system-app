@@ -1,4 +1,4 @@
-const {getEmployee,deleteEmployee,updateEmployee,getEmployees,addEmployee, getLoggedInEmployee, profilePicture, generateReport}= require('../controllers/empController')
+const {getEmployee,deleteEmployee,updateEmployee,getEmployees,addEmployee, getLoggedInEmployee, profilePicture, generateReport, changeEmail, changePassword, savePushToken}= require('../controllers/empController')
 
 const express=require('express');
 const giveAccessTo = require('../middleware/giveAccessTo');
@@ -21,7 +21,10 @@ router.get('/getLoggedInEmployee',getLoggedInEmployee)
 router.post('/getReport',generateReport)
 router.post('/addEmployee',giveAccessTo("admin"),upload.single('profilePicture'),addEmployee)
 router.post('/profilePicture',upload.single('profilePicture'),profilePicture)
+router.post('/savePushToken',savePushToken)
 router.delete('/deleteEmployee/:id',giveAccessTo("admin"),deleteEmployee)
 router.put('/updateEmployee/:id',giveAccessTo("admin"),updateEmployee)
+router.patch('/changeEmail',changeEmail)
+router.patch('/changePassword',changePassword)
 
 module.exports=router;

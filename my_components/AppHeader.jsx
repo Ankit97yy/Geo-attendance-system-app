@@ -4,13 +4,16 @@ import { Text, View } from "react-native";
 import { SECRET_KEY } from "@env";
 import * as SecureStore from "expo-secure-store";
 import { userDataContext } from "../contexts/SignedInContext";
+import { useNavigation } from '@react-navigation/native';
+import profilepicture from '../assets/kk.jpg'
 
 const AppHeader = () => {
   const [visible, setVisible] = useState(false);
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
-  const { setuserData} = useContext(userDataContext);
-
+  const { userData,setuserData} = useContext(userDataContext);
+  console.log("🚀 ~ file: AppHeader.jsx:14 ~ AppHeader ~ userData:", userData)
+  const navigation = useNavigation();
   const handLogout = async () => {
     await SecureStore.deleteItemAsync(SECRET_KEY);
     setuserData((prev) => {
@@ -24,6 +27,7 @@ const AppHeader = () => {
       };
     });
   };
+  let profile_picture=`../assests/${userData.profile_picture}`
   return (
     <Appbar.Header
       // elevated={false}
@@ -31,21 +35,23 @@ const AppHeader = () => {
       style={{
         marginHorizontal: 0,
         marginTop: 30,
-        height: 90,
+        height: 80,
         backgroundColor: "#0088ff",
       }}
     >
       {/* <Appbar.BackAction onPress={() => {}} /> */}
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <Avatar.Image
-          source={require("../assets/kk.jpg")}
+          source={{uri:`http://192.168.29.133:3001/${userData.profile_picture}`}}
+          // source={require(`../assets/kk.jpg`)}
+          
           style={{ marginRight: 5 }}
           size={45}
         />
         <View style={{flexDirection: "row",justifyContent: "space-between",flex: 1}}>
           <View>
             <Appbar.Content
-              title="Welcome, Ankit"
+              title={`Welcome, ${userData.fullName}`}
               titleStyle={{
                 fontSize: 18,
                 fontFamily: "Inter-Black",
@@ -53,7 +59,7 @@ const AppHeader = () => {
               }}
             />
             <Appbar.Content
-              title="DownTown Branch"
+              title={`${userData.branch_location_name} branch`}
               titleStyle={{
                 fontSize: 13,
                 color: "white",
@@ -64,12 +70,16 @@ const AppHeader = () => {
           <Menu
                 visible={visible}
                 onDismiss={closeMenu}
+                contentStyle={{backgroundColor:"white"}}
                 anchor={
-                  <Appbar.Action icon="menu" color="white" onPress={()=>setVisible(prev=> !prev)} />
+                  <Appbar.Action icon="dots-vertical" color="white" onPress={openMenu} />
                 }
               >
                 <View style={{}}>
-                <Menu.Item onPress={() => {}} title="Settings" />
+                <Menu.Item onPress={() => {
+                  closeMenu();
+                  navigation.navigate("Settings")}} title="Settings" />
+                  <Divider/>
                 <Menu.Item onPress={handLogout} title="Logout" />
                 </View>
               </Menu>

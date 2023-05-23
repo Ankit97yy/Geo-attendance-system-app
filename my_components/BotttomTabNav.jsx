@@ -36,16 +36,16 @@ import MenuItem from "./MenuItem";
             />
                <Tab.Screen
               options={{
-                tabBarIcon: ({ color }) => (
+                tabBarIcon: ({ focused,color }) => (
                   <MaterialCommunityIcons
                     name="account"
-                    color={color}
+                    color={focused?"white":color}
                     size={26}
                   />
                 ),
               }}
-              name="Employees"
-              component={Employees}
+              name="Profile"
+              component={EmpProfile}
             />
           </Tab.Navigator>
     )
