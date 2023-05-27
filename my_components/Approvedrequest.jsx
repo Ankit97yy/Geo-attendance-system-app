@@ -10,7 +10,6 @@ import { StyleSheet } from "react-native";
 
 export default function Approvedrequest({navigation}) {
   const [leaves, setleaves] = useState([])
-  console.log("🚀 ~ file: Approvedrequest.jsx:13 ~ Approvedrequest ~ leaves:", leaves)
   const [loading, setloading] = useState(false)
   const [refresh, setrefresh] = useState(true)
   useEffect(()=>{

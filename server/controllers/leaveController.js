@@ -262,13 +262,13 @@ async function approveLeave(req, res) {
 async function ongoingLeaveOfAnEmployee(req, res) {
   try {
     const [time] = await db.execute(
-      "SELECT start,end FROM leave_request WHERE employee_id =? AND status ='approved'",
-      [req.id]
+      "SELECT start,end FROM leave_request WHERE employee_id =? AND status ='approved' AND end > ?",
+      [req.id,getDate()]
     );
     if (time.length > 0) {
-      const currentDate = DateTime.now();
-      const startDate = DateTime.fromJSDate(time[0].start);
-      const endDate = DateTime.fromJSDate(time[0].end);
+      const currentDate = DateTime.now().setZone('Asia/Kolkata');
+      const startDate = DateTime.fromJSDate(time[0].start).setZone('Asia/Kolkata');
+      const endDate = DateTime.fromJSDate(time[0].end).setZone('Asia/Kolkata');
       if (currentDate >= startDate && currentDate <= endDate)
         return res.status(200).json({ onLeave: true });
       else return res.status(200).json({ onLeave: false });

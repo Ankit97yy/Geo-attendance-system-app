@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { View } from 'react-native';
 import { Button, Menu, Divider, Provider } from 'react-native-paper';
-import { socket } from '../App';
 
 
 const MenuItem = () => {

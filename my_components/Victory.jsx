@@ -1,29 +1,28 @@
-import { React, memo, useContext, useEffect, useMemo, useState } from "react";
-import { StyleSheet, View, Text, FlatList } from "react-native";
+import { React,useCallback,useContext ,useState } from "react";
+import { StyleSheet, View, } from "react-native";
 import * as SecureStore from "expo-secure-store";
 // import { SafeAreaView, FlatList, StatusBar } from "react-native";
 import { useFonts } from "expo-font";
-import { FAB, Surface } from "react-native-paper";
+import { FAB } from "react-native-paper";
 import * as SplashScreen from "expo-splash-screen";
 import { Button } from "react-native-paper";
 import AppHeader from "./AppHeader";
 import { SECRET_KEY } from "@env";
 import { userDataContext } from "../contexts/SignedInContext";
 import { DateTime } from "luxon";
-import axios from "axios";
 import AttendanceList2 from "./AttendanceList2";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { setStatusBarStyle } from "expo-status-bar";
-import { socket } from "../App";
+import { useFocusEffect } from "@react-navigation/native";
 
 SplashScreen.preventAutoHideAsync();
 export default function Vict({ navigation }) {
   setStatusBarStyle("light");
-  console.log("date changed");
   const { setuserData, userData } = useContext(userDataContext);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [currentDate, setcurrentDate] = useState(DateTime.now());
-  const [attendance, setattendance] = useState([]);
+
+ 
 
   const [fontsLoaded] = useFonts({
     "Inter-Black": require("../assets/fonts/InterDesktop/Inter-Medium.otf"),
@@ -70,13 +69,13 @@ export default function Vict({ navigation }) {
         onCancel={hideDatePicker}
         maximumDate={new Date(2050, 12, 30)}
       />
-      <FAB
-        icon="fingerprint"
+      {/* <FAB
+        icon="google-maps"
         size="medium"
         style={styles.fab}
         color="white"
         onPress={() => navigation.navigate("MarkAttendance")}
-      />
+      /> */}
       {/* <Surface style={{backgroundColor:'white',marginVertical:5}} >
         <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
           <Button mode="contained">Punch in</Button>

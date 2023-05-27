@@ -8,7 +8,6 @@ function AttendanceList2({ currentDate }) {
   const [loading, setloading] = useState(false);
   const [attendance, setattendance] = useState([]);
   const fetchdata = (source) => {
-    console.log("fetch");
     axios
       .get("attendance/getAttendance", {
         cancelToken: source?.token,
@@ -27,7 +26,6 @@ function AttendanceList2({ currentDate }) {
       });
   };
   useEffect(() => {
-    console.log("rendered")
     const source = axios.CancelToken.source();
     fetchdata(source);
 
@@ -37,7 +35,6 @@ function AttendanceList2({ currentDate }) {
   const RenderList = memo(({ data }) => {
     const dateObject = DateTime.fromISO(data.date);
     const date = dateObject.toFormat("dd");
-    console.log("🚀 ~ file: AttendanceList2.jsx:18 ~ RenderList ~ date:", date);
     const day = dateObject.toFormat("ccc");
     const punchIn =
       data.status === "present"

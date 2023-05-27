@@ -5,6 +5,7 @@ import Employees from "./Employees";
 import Approvedrequest from "./Approvedrequest";
 import EmpProfile from "./EmpProfile";
 import MenuItem from "./MenuItem";
+import MarkAtt from "./MarkAtt";
   const Tab = createMaterialBottomTabNavigator();
   const BottomTabNav=()=>{
     return(
@@ -12,9 +13,20 @@ import MenuItem from "./MenuItem";
             <Tab.Screen
               options={{
                 tabBarIcon: ({ focused,color }) => (
-                  <MaterialCommunityIcons name="home" color={focused?"white":color} size={26}/>
+                  <MaterialCommunityIcons name="google-maps" color={focused?"white":color} size={26}/>
                 ),
-                title: "Home",
+                title: "Punch",
+                
+              }}
+              name="MarkAtt"
+              component={MarkAtt}
+            />
+            <Tab.Screen
+              options={{
+                tabBarIcon: ({ focused,color }) => (
+                  <MaterialCommunityIcons name="view-list" color={focused?"white":color} size={26}/>
+                ),
+                title: "Records",
                 
               }}
               name="Vict"

@@ -16,6 +16,7 @@ export const initialState = {
   donePunchedIn: false,
   donePunchedOut: false,
   inTime: true,
+  message:"",
   branchLocation: {
     latitude: 0,
     longitude: 0,
@@ -33,6 +34,17 @@ export const initialState = {
 
 export function locationReducer(state, action) {
   switch (action.type) {
+    case "message":
+      return {
+        ...state,
+        message: action.payload,
+      };
+    case "hideMarker":
+      return {
+        ...state,
+        message:"Getting your location. Please wait",
+        showMarker: false,
+      };
     case "location":
       console.log("location dispatched");
       return {

@@ -2,7 +2,7 @@ import { initialState } from "../hooks/LocationHook";
 import { locationReducer } from "../hooks/LocationHook";
 import { View, Text, StyleSheet, Image } from "react-native";
 import * as Location from "expo-location";
-import React, { useContext, useEffect, useReducer } from "react";
+import React, { useCallback, useContext, useEffect, useReducer } from "react";
 import MapView, { Circle, Marker } from "react-native-maps";
 import { Button, FAB, Modal, Portal } from "react-native-paper";
 import Lottie from "lottie-react-native";
@@ -10,9 +10,11 @@ import haversine from "./test";
 import moment from "moment/moment";
 import axios from "axios";
 import { userDataContext } from "../contexts/SignedInContext";
+import { useFocusEffect } from "@react-navigation/native";
+import AppHeader from "./AppHeader";
 import { socket } from "./SocketConn";
 
-export default function MarkAtttendance() {
+export default function MarkAtt() {
   const [state, dispatch] = useReducer(locationReducer, initialState);
   const { userData } = useContext(userDataContext);
 
@@ -21,7 +23,7 @@ export default function MarkAtttendance() {
       .post("attendance/addAttendance")
       .then((res) => {
         if (res.data.attendance) dispatch({ type: "handlePunchIn" });
-        socket.emit("MARK_ATTENDANCE","attendance marked")
+        socket.emit("MARK_ATTENDANCE", "attendance marked");
       })
       .catch((err) => console.log(err));
   };
@@ -31,138 +33,151 @@ export default function MarkAtttendance() {
       .post("attendance/addAttendance")
       .then((res) => {
         if (res.data.attendance) dispatch({ type: "handlePunchOut" });
-        socket.emit("MARK_ATTENDANCE","attendance marked")
-
+        socket.emit("MARK_ATTENDANCE", "attendance marked");
       })
       .catch((err) => console.log(err));
   };
 
-  useEffect(() => {
-    // dispatch({
-    //   type: "checkTime",
-    //   payload: { startTime: "09:30:00", endTime: "18:30:00" },
-    // });
+  useFocusEffect(
+    useCallback(() => {
+      axios
+        .get("branch/getBranch")
+        .then((res) => {
+          dispatch({
+            type: "checkTime",
+            payload: {
+              startTime: res.data.start_time,
+              endTime: res.data.end_time,
+            },
+          });
+        })
+        .catch((err) => console.log(err));
+      axios
+        .get("/attendance/getTodayAttendanceOfAnEmployee")
+        .then((res) => {
+          if (res.data.length > 0) {
+            if (res.data[0].in_time !== null) {
+              dispatch({ type: "donePunchedIn", payload: true });
+            }
+            if (res.data[0].out_time !== null) {
+              dispatch({ type: "donePunchedOut", payload: true });
+            }
+          }
+        })
+        .catch((err) => console.log(err));
 
-    axios
-      .get("branch/getBranch")
-      .then((res) => {
-        dispatch({
-          type: "checkTime",
-          payload: { startTime: res.data.start_time, endTime:res.data.end_time },
-        });
-      })
-      .catch((err) => console.log(err));
-    axios
-      .get("/attendance/getTodayAttendanceOfAnEmployee")
-      .then((res) => {
-        if (res.data.length > 0) {
-          if (res.data[0].in_time !== null) {
-            dispatch({ type: "donePunchedIn", payload: true });
+      axios
+        .get("/leave/getOngoingLeaveOfAnEmployee")
+        .then((res) => {
+          if (res.data.onLeave) dispatch({ type: "onLeave", payload: true });
+          else dispatch({ type: "onLeave", payload: false });
+        })
+        .catch((err) => console.log(err, "kakak"));
+    }, [])
+  );
+  useFocusEffect(
+    useCallback(() => {
+      let timeId;
+      (async () => {
+        try {
+          let { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== "granted") {
+            console.log("Permission to access location was denied");
+            return;
           }
-          if (res.data[0].out_time !== null) {
-            dispatch({ type: "donePunchedOut", payload: true });
-          }
+
+          timeId = setInterval(async () => {
+            try {
+              console.log("fired");
+              console.log(timeId, "id");
+              let locations = await Location.getCurrentPositionAsync();
+              console.log(
+                "🚀 ~ file: MarkAtttendance.jsx:83 ~ location:",
+                locations
+              );
+              dispatch({
+                type: "location",
+                payload: locations,
+              });
+            } catch (error) {
+              console.log("cleaned");
+              console.log(timeId, "clear time");
+              clearInterval(timeId);
+              console.log(error, "ppppp");
+            }
+          }, 2000);
+        } catch (error) {
+          console.log(error, "ppppp");
         }
-      })
-      .catch((err) => console.log(err));
+      })();
 
-    axios
-      .get("/leave/getOngoingLeaveOfAnEmployee")
-      .then((res) => {
-        if (res.data.onLeave) dispatch({ type: "onLeave", payload: true });
-        else dispatch({ type: "onLeave", payload: false });
-      })
-      .catch((err) => console.log(err, "kakak"));
-  }, []);
-
-  useEffect(() => {
-    let timeId;
-    (async () => {
-      try {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          console.log("Permission to access location was denied");
-          return;
+      return () => {
+        console.log("cleaned");
+        console.log(timeId, "clear time");
+        clearInterval(timeId);
+        dispatch({type:'hideMarker'});
+      };
+    }, [state.render])
+  );
+  useFocusEffect(
+    useCallback(() => {
+      console.log("000000000000000",state.showMarker)
+      if(!state.showMarker) dispatch({type:'message',payload:'Getting your location. Please wait'})
+      else if (state.onLeave) dispatch({type:'message',payload:'You are on leave'})
+      else if (state.punchIn || state.punchOut)
+      dispatch({type:'message',payload:'you are in office reach'})
+      else if (state.donePunchedIn && state.donePunchedOut)
+      dispatch({type:'message',payload:'You have marked your attendance'})
+      else if (!state.inTime)
+      dispatch({type:'message',payload:'you can only mark attendance in office hours'})
+      else
+      dispatch({type:'message',payload:'you are not in office reach'})
+      if (state.canMarkAttendance()) {
+        const distance = haversine(
+          state.currentLocation.coords.latitude,
+          state.currentLocation.coords.longitude,
+          userData.latitude, //! set data from context
+          userData.longitude
+        );
+        console.log(
+          "🚀 ~ file: MarkAtttendance.jsx:86 ~ useEffect ~ distance:",
+          distance
+        );
+        if (distance <= 100) {
+          if (!state.donePunchedIn)
+            dispatch({ type: "enablePunchIn", payload: true });
+          else if (!state.donePunchedOut)
+            dispatch({ type: "enablePunchOut", payload: true });
+        } else {
+          dispatch({ type: "enablePunchIn", payload: false });
+          dispatch({ type: "enablePunchOut", payload: false });
         }
-
-        timeId = setInterval(async () => {
-          try {
-            console.log("fired");
-            console.log(timeId, "id");
-            let locations = await Location.getCurrentPositionAsync();
-            console.log(
-              "🚀 ~ file: MarkAtttendance.jsx:83 ~ location:",
-              locations
-            );
-            dispatch({
-              type: "location",
-              payload: locations,
-            });
-          } catch (error) {
-            console.log("cleaned");
-            console.log(timeId, "clear time");
-            clearInterval(timeId);
-            console.log(error, "ppppp");
-          }
-        }, 2000);
-      } catch (error) {
-        console.log(error, "ppppp");
       }
-    })();
+    }, [
+      state.currentLocation,
+      state.onLeave,
+      state.donePunchedIn,
+      state.donePunchedOut,
+    ])
+  );
 
-    return () => {
-      console.log("cleaned");
-      console.log(timeId, "clear time");
-      clearInterval(timeId);
-    };
-  }, [state.render]);
+  // useEffect(() => {
+  //   dispatch({
+  //     type: "checkTime",
+  //     payload: { startTime: "09:30:00", endTime: "18:30:00" },
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    if (state.canMarkAttendance()) {
-      const distance = haversine(
-        state.currentLocation.coords.latitude,
-        state.currentLocation.coords.longitude,
-        userData.latitude, //! set data from context
-        userData.longitude
-      );
-      console.log(
-        "🚀 ~ file: MarkAtttendance.jsx:86 ~ useEffect ~ distance:",
-        distance
-      );
-      if (distance <= 100) {
-        if (!state.donePunchedIn)
-          dispatch({ type: "enablePunchIn", payload: true });
-        else if (!state.donePunchedOut)
-          dispatch({ type: "enablePunchOut", payload: true });
-      } else {
-        dispatch({ type: "enablePunchIn", payload: false });
-        dispatch({ type: "enablePunchOut", payload: false });
-      }
-    }
-  }, [
-    state.currentLocation,
-    state.onLeave,
-    state.donePunchedIn,
-    state.donePunchedOut,
-  ]); //! dependency array is an object!!!
+  // useEffect(() => {}, [state.render]);
 
-  let message;
-  if (state.onLeave)
-    message = <Text style={{ fontSize: 18 }}>You are on leave</Text>;
-  else if (state.punchIn || state.punchOut)
-    message = <Text style={{ fontSize: 18 }}>You are in office reach</Text>;
-  else if (state.donePunchedIn && state.donePunchedOut)
-    message = (
-      <Text style={{ fontSize: 18 }}>You have marked your attendance</Text>
-    );
-  else if (!state.inTime)
-    message = (
-      <Text style={{ fontSize: 18 }}>
-        You can mark attendance only in office hours
-      </Text>
-    );
-  else
-    message = <Text style={{ fontSize: 18 }}>You are not in office reach</Text>;
+  // useEffect(() => {}, [
+  //   state.currentLocation,
+  //   state.onLeave,
+  //   state.donePunchedIn,
+  //   state.donePunchedOut,
+  // ]); //! dependency array is an object!!!
+
+
 
   // if (!currentLocation) {
   //   return (
@@ -197,11 +212,13 @@ export default function MarkAtttendance() {
   return (
     <>
       <FAB
-        style={{ position: "absolute", bottom: 40, right: 16 }}
-        icon="reload"
+        style={{ position: "absolute", bottom: 250, right: 16,zIndex:1,backgroundColor:'white' }}
+        icon="crosshairs-gps"
+        color={state.showMarker?"#0088ff":"black"}
         onPress={() => dispatch({ type: "render" })}
       />
       <View style={styles.container}>
+        <AppHeader/>
         <MapView
           style={styles.map}
           // initialRegion={{
@@ -253,7 +270,7 @@ export default function MarkAtttendance() {
                 : "You are outside of the region"}
             </Text>
           )} */}
-          <Text>{message}</Text>
+          <Text>{state.message}</Text>
         </View>
         <View
           style={{

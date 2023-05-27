@@ -12,7 +12,6 @@ const AppHeader = () => {
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
   const { userData,setuserData} = useContext(userDataContext);
-  console.log("🚀 ~ file: AppHeader.jsx:14 ~ AppHeader ~ userData:", userData)
   const navigation = useNavigation();
   const handLogout = async () => {
     await SecureStore.deleteItemAsync(SECRET_KEY);

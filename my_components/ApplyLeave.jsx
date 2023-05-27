@@ -21,7 +21,7 @@ import {
 import { Button, TextInput } from "react-native-paper";
 import { DateTime } from "luxon";
 import Lottie from "lottie-react-native";
-import { socket } from "../App";
+import { socket } from "./SocketConn";
 export default function ApplyLeave() {
   const [desc, setdesc] = useState("");
   const [startDate, setstartDate] = useState(null);
