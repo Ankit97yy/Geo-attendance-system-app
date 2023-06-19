@@ -17,7 +17,7 @@ async function getEmployee(req, res) {
   try {
     const emp_id = req.params.id;
     const [result] = await db.execute(
-      "SELECT employees.id,branch_location_id,full_name,email,branch_locations.location_name FROM employees JOIN branch_locations ON employees.branch_location_id=branch_locations.id WHERE employees.id= ?",
+      "SELECT employees.id,branch_location_id,full_name,email,profile_picture,branch_locations.location_name FROM employees JOIN branch_locations ON employees.branch_location_id=branch_locations.id WHERE employees.id= ?",
       [emp_id]
     );
     res.send(result);
@@ -29,10 +29,11 @@ async function getLoggedInEmployee(req, res) {
   try {
     const emp_id = req.id;
     const [result] = await db.execute(
-      "SELECT full_name,location_name,latitude,longitude,profile_picture FROM employees JOIN branch_locations ON employees.branch_location_id=branch_locations.id WHERE employees.id= ?",
+      "SELECT employees.id,full_name,location_name,latitude,longitude,profile_picture FROM employees JOIN branch_locations ON employees.branch_location_id=branch_locations.id WHERE employees.id= ?",
       [emp_id]
     );
     res.send({
+      id:result[0].id,
       name: result[0].full_name,
       location_name: result[0].location_name,
       latitude: result[0].latitude,
@@ -108,6 +109,7 @@ async function updateEmployee(req, res) {
     const value = Object.values(attributes);
 
     if (key[0] === "is_admin" && value[0] === "no") {
+    if(id===req.id.toString()) return res.status(403).send("can not remove yourself from admin")
       const [checkAdmin] = await db.execute(
         'SELECT id FROM employees WHERE is_admin="yes"'
       );

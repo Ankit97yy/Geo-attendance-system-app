@@ -22,7 +22,7 @@ import { Button, TextInput } from "react-native-paper";
 import { DateTime } from "luxon";
 import Lottie from "lottie-react-native";
 import { socket } from "./SocketConn";
-export default function ApplyLeave() {
+export default function ApplyLeave({navigation}) {
   const [desc, setdesc] = useState("");
   const [startDate, setstartDate] = useState(null);
   const [endDate, setendDate] = useState(null);
@@ -95,11 +95,12 @@ export default function ApplyLeave() {
         type: checked,
       })
       .then((res) => {
-        axios
-          .get("leave/getRemainingLeaves")
-          .then((res) => setremainingLeaves(res.data));
+        // axios
+        //   .get("leave/getRemainingLeaves")
+        //   .then((res) => setremainingLeaves(res.data));
         setshowAlert(true);
         socket.emit("APPLY_LEAVE", "test");
+        navigation.goBack();
       })
       .catch((err) => console.log(err));
   };

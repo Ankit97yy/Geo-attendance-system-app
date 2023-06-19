@@ -13,8 +13,9 @@ import { userDataContext } from "../contexts/SignedInContext";
 import { useFocusEffect } from "@react-navigation/native";
 import AppHeader from "./AppHeader";
 import { socket } from "./SocketConn";
+import { useNavigation } from "@react-navigation/native";
+export default function MarkAtt({navigation}) {
 
-export default function MarkAtt() {
   const [state, dispatch] = useReducer(locationReducer, initialState);
   const { userData } = useContext(userDataContext);
 
@@ -37,7 +38,20 @@ export default function MarkAtt() {
       })
       .catch((err) => console.log(err));
   };
+//   useEffect(() => {
+//     const unsubscribe = navigation.addListener('focus', () => {
+    // Do something when the screen blurs
+//     console.log("ljejfnwekjbefl")
+//     dispatch({ type: "enablePunchIn", payload: false });
+//     dispatch({ type: "enablePunchOut", payload: false });
 
+//   });
+
+//   return ()=>{
+//     console.log("component unmounted")
+//     unsubscribe();
+//   };
+// }, [navigation]);
   useFocusEffect(
     useCallback(() => {
       axios
@@ -50,12 +64,21 @@ export default function MarkAtt() {
               endTime: res.data.end_time,
             },
           });
+          dispatch({
+            type:'setRadius',
+            payload:res.data.radius
+          })
         })
         .catch((err) => console.log(err));
       axios
         .get("/attendance/getTodayAttendanceOfAnEmployee")
         .then((res) => {
           if (res.data.length > 0) {
+            if(res.data[0].status==='absent'){
+              dispatch({ type: "donePunchedIn", payload: true });
+              dispatch({ type: "donePunchedOut", payload: true });
+              return;
+            }
             if (res.data[0].in_time !== null) {
               dispatch({ type: "donePunchedIn", payload: true });
             }
@@ -115,35 +138,33 @@ export default function MarkAtt() {
         console.log("cleaned");
         console.log(timeId, "clear time");
         clearInterval(timeId);
-        dispatch({type:'hideMarker'});
       };
     }, [state.render])
   );
   useFocusEffect(
     useCallback(() => {
-      console.log("000000000000000",state.showMarker)
-      if(!state.showMarker) dispatch({type:'message',payload:'Getting your location. Please wait'})
+      if(!state.showMarker) dispatch({type:'message',payload:'Getting your location. Please wait....'})
       else if (state.onLeave) dispatch({type:'message',payload:'You are on leave'})
       else if (state.punchIn || state.punchOut)
-      dispatch({type:'message',payload:'you are in office reach'})
+      dispatch({type:'message',payload:'You are in office reach'})
       else if (state.donePunchedIn && state.donePunchedOut)
       dispatch({type:'message',payload:'You have marked your attendance'})
       else if (!state.inTime)
-      dispatch({type:'message',payload:'you can only mark attendance in office hours'})
-      else
-      dispatch({type:'message',payload:'you are not in office reach'})
+      dispatch({type:'message',payload:'You can only mark attendance in office hours'})
+      else if (!state.punchIn || !state.punchOut)
+      dispatch({type:'message',payload:'You are not in office reach'})
       if (state.canMarkAttendance()) {
         const distance = haversine(
           state.currentLocation.coords.latitude,
           state.currentLocation.coords.longitude,
-          userData.latitude, //! set data from context
+          userData.latitude, 
           userData.longitude
         );
         console.log(
           "🚀 ~ file: MarkAtttendance.jsx:86 ~ useEffect ~ distance:",
           distance
         );
-        if (distance <= 100) {
+        if (distance <= state.radius) {
           if (!state.donePunchedIn)
             dispatch({ type: "enablePunchIn", payload: true });
           else if (!state.donePunchedOut)
@@ -158,6 +179,9 @@ export default function MarkAtt() {
       state.onLeave,
       state.donePunchedIn,
       state.donePunchedOut,
+      state.render,
+      state.punchIn,
+      state.punchOut
     ])
   );
 
@@ -203,7 +227,7 @@ export default function MarkAtt() {
           style={styles.markerImage}
         />
         <Image
-          source={require("../assets/kk.jpg")}
+          source={{uri:`http://192.168.29.133:3001/${userData.profile_picture}`}}
           style={styles.avatarImage}
         />
       </View>
@@ -252,7 +276,7 @@ export default function MarkAtt() {
             }}
             strokeWidth={2}
             strokeColor="green"
-            radius={100}
+            radius={state.radius}
           />
         </MapView>
         <View
@@ -270,7 +294,7 @@ export default function MarkAtt() {
                 : "You are outside of the region"}
             </Text>
           )} */}
-          <Text>{state.message}</Text>
+          <Text style={{fontSize:17,fontFamily:"Inter-Black"}}>{state.message}</Text>
         </View>
         <View
           style={{

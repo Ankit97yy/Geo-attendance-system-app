@@ -50,7 +50,7 @@ const AppHeader = () => {
         <View style={{flexDirection: "row",justifyContent: "space-between",flex: 1}}>
           <View>
             <Appbar.Content
-              title={`Welcome, ${userData.fullName}`}
+              title={userData?.fullName}
               titleStyle={{
                 fontSize: 18,
                 fontFamily: "Inter-Black",
@@ -58,7 +58,7 @@ const AppHeader = () => {
               }}
             />
             <Appbar.Content
-              title={`${userData.branch_location_name} branch`}
+              title={`${userData?.branch_location_name} Branch`}
               titleStyle={{
                 fontSize: 13,
                 color: "white",

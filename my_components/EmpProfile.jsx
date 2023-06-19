@@ -33,10 +33,11 @@ export default function EmpProfile() {
           // console.log("🚀 ~ file: WorkingHours.jsx:74 ~ .then ~ hour:", hour);
           let date = DateTime.fromISO(item.date).toLocaleString({
             day: "numeric",
-            month: "short",
+            // month: "short",
           });
           data.push({ date: date, hours: hour });
         });
+        data.reverse()
         setdata(data);
         setattendance(res.data);
       })
@@ -91,23 +92,23 @@ export default function EmpProfile() {
             marginVertical: 10,
           }}
         >
-          <Text style={{ fontSize: 18, alignSelf: "center" }}>
+          <Text style={{ fontSize: 18, alignSelf: "center",fontFamily:'Inter-Black' }}>
             Remaining Leaves
           </Text>
           <View
             style={{ flexDirection: "row", justifyContent: "space-around" }}
           >
             <View style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 18, color: "#0088ff" }}>Annual</Text>
-              <Text style={{ fontSize: 17 }}>{remainingLeaves?.annual}</Text>
+              <Text style={{ fontSize: 18, color: "#0088ff",fontFamily:'Inter-Black' }}>Annual</Text>
+              <Text style={{ fontSize: 17,fontFamily:'Inter-Black' }}>{remainingLeaves?.annual}</Text>
             </View>
             <View style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 18, color: "tomato" }}>Sick</Text>
-              <Text style={{ fontSize: 17 }}>{remainingLeaves?.sick}</Text>
+              <Text style={{ fontSize: 18, color: "tomato" ,fontFamily:'Inter-Black'}}>Sick</Text>
+              <Text style={{ fontSize: 17 ,fontFamily:'Inter-Black'}}>{remainingLeaves?.sick}</Text>
             </View>
             <View style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 18, color: "orange" }}>Casual</Text>
-              <Text style={{ fontSize: 17 }}>{remainingLeaves?.casual}</Text>
+              <Text style={{ fontSize: 18, color: "orange",fontFamily:'Inter-Black' }}>Casual</Text>
+              <Text style={{ fontSize: 17 ,fontFamily:'Inter-Black'}}>{remainingLeaves?.casual}</Text>
             </View>
           </View>
         </Surface>
@@ -148,29 +149,35 @@ export default function EmpProfile() {
             ></Button>
           </View>
           {/* <Surface style={{ backgroundColor: "white" }}> */}
-          <Text style={{ fontSize: 18, alignSelf: "center" }}>
+          <Text style={{ fontSize: 18, alignSelf: "center",fontFamily:"Inter-Black" }}>
             Working Hours
           </Text>
-          <VictoryChart width={350} theme={VictoryTheme.material}>
+          {data.length===0?(
+            <View style={{height:350,justifyContent:'center',alignItems:"center"}}>
+              <Text style={{fontFamily:'Inter-Black',fontSize:18}}>No records to show</Text>
+            </View>
+          ):(
+          <VictoryChart width={370} theme={VictoryTheme.material}>
             <VictoryBar barWidth={15} data={data} x="date" y="hours" />
           </VictoryChart>
+          )}
         </Surface>
         <Surface style={{backgroundColor:'white'}}>
-          <Text style={{ fontSize: 20, alignSelf: "center" }}>
+          <Text style={{ fontSize: 20, alignSelf: "center",fontFamily:"Inter-Black"}}>
             Total Attendance
           </Text>
           <View
             style={{ flexDirection: "row", justifyContent: "space-around" }}
           >
             <View style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 18, color: "#0088ff" }}>Present</Text>
+              <Text style={{ fontSize: 18, color: "#0088ff",fontFamily:"Inter-Black"}}>Present</Text>
               <Text style={{ fontSize: 17 }}>
                 {attendance.filter((item) => item.status === "present").length}
               </Text>
             </View>
             <View style={{ alignItems: "center" }}></View>
             <View style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 18, color: "tomato" }}>Absent</Text>
+              <Text style={{ fontSize: 18, color: "tomato",fontFamily:"Inter-Black"}}>Absent</Text>
               <Text style={{ fontSize: 17 }}>
                 {attendance.filter((item) => item.status === "absent").length}
               </Text>

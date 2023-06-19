@@ -20,7 +20,7 @@ async function getPendingLeaves(req, res) {
 
 async function getAllLeaves(req, res) {
   try {
-    const [result] = await db.execute("SELECT * FROM leave_request");
+    const [result] = await db.execute("SELECT start,end,leave_type,status,employees.full_name FROM leave_request JOIN employees on leave_request.employee_id=employees.id");
     res.send(result);
   } catch (error) {
     console.log(
@@ -262,11 +262,12 @@ async function approveLeave(req, res) {
 async function ongoingLeaveOfAnEmployee(req, res) {
   try {
     const [time] = await db.execute(
-      "SELECT start,end FROM leave_request WHERE employee_id =? AND status ='approved' AND end > ?",
+      "SELECT start,end FROM leave_request WHERE employee_id =? AND status ='approved' AND end >= ?",
       [req.id,getDate()]
     );
     if (time.length > 0) {
-      const currentDate = DateTime.now().setZone('Asia/Kolkata');
+      let currentDate = DateTime.now().setZone('Asia/Kolkata');
+      currentDate=currentDate.set({hour:0,minute:0,second:0,millisecond:0})
       const startDate = DateTime.fromJSDate(time[0].start).setZone('Asia/Kolkata');
       const endDate = DateTime.fromJSDate(time[0].end).setZone('Asia/Kolkata');
       if (currentDate >= startDate && currentDate <= endDate)
@@ -281,16 +282,16 @@ async function ongoingLeaves(req, res) {
   try {
     let total = 0;
     const [leaves] = await db.execute(
-      "SELECT start,end FROM leave_request WHERE status ='approved' AND end > ?",
+      "SELECT start,end FROM leave_request WHERE status ='approved' AND end >= ?",
       [getDate()]
     );
+    console.log("🚀 ~ file: leaveController.js:287 ~ ongoingLeaves ~ leaves:", leaves)
 
     leaves.map((item) => {
-      const currentDate = DateTime.now().setZone('Asia/Kolkata');
-      const startDate = DateTime.fromJSDate(item.start).setZone('Asia/kolkata');
-      console.log("🚀 ~ file: leaveController.js:291 ~ leaves.map ~ startDate:", startDate)
+      let currentDate = DateTime.now().setZone('Asia/Kolkata');
+      currentDate=currentDate.set({hour:0,minute:0,second:0,millisecond:0})
+      const startDate = DateTime.fromJSDate(item.start).setZone('Asia/Kolkata');
       const endDate = DateTime.fromJSDate(item.end).setZone('Asia/Kolkata');
-      console.log("🚀 ~ file: leaveController.js:293 ~ leaves.map ~ endDate:", endDate)
       if (currentDate >= startDate && currentDate <= endDate) total++;
     });
     console.log(

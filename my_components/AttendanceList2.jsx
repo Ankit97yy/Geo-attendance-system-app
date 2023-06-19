@@ -157,7 +157,11 @@ function AttendanceList2({ currentDate }) {
   }, (prevProps, nextProps) => {
     return prevProps.attendance === nextProps.attendance;
   });
-
+if(attendance.length===0) return(
+  <View style={{justifyContent:'center',alignItems:'center',flex:1}}>
+    <Text style={{fontSize:20}}>No records to show</Text>
+  </View>
+)
   return <List attendance={attendance} />;
 }
 

@@ -9,12 +9,13 @@ import { ActivityIndicator, View } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import * as SecureStore from "expo-secure-store";
 import { SECRET_KEY } from "@env";
-import { MD3LightTheme, Provider as PaperProvider } from "react-native-paper";
+import { MD3LightTheme, Provider as PaperProvider, Snackbar } from "react-native-paper";
 import 'intl';
 import 'intl/locale-data/jsonp/en';
 import axios from "axios";
 import { colors } from "./my_components/coolrs";
 import { socket } from "./my_components/SocketConn";
+import NetInfo from '@react-native-community/netinfo';
 
 
 // import AppHeader from './my_components/AppHeader';
@@ -23,7 +24,7 @@ socket.on("connect", () => {
 });
 
 export default function App() {
-  axios.defaults.baseURL = "http://192.168.29.133:3001/";
+  axios.defaults.baseURL = "http://192.168.251.4:3001/";
   const [userData, setuserData] = useState({
     fullName: "",
     branch_location_name: "",
@@ -33,6 +34,8 @@ export default function App() {
     accessToken:null,
     profile_picture:""
   });
+
+  const [isOffline, setisOffline] = useState(false)
   useEffect(() => {
     async function getToken(key) {
       let result = await SecureStore.getItemAsync(key);
@@ -48,7 +51,11 @@ export default function App() {
         });
       }
     }
+    const unsubscribe = NetInfo.addEventListener(state => {
+      if(!state.isConnected) setisOffline(true)
+    });
     getToken(SECRET_KEY);
+    return ()=>unsubscribe();
   }, []);
 
   const [fontsLoaded] = useFonts({
@@ -73,7 +80,19 @@ export default function App() {
   };
 
   if (userData.isSignedIn === null) return <ActivityIndicator animating={true} />;
-
+  if(isOffline) return (
+    <Snackbar
+    visible={true}
+    // onDismiss={onDismissSnackBar}
+    action={{
+      label: 'Undo',
+      onPress: () => {
+        // Do something
+      },
+    }}>
+    You are currently offline
+  </Snackbar>
+  )
   return (
     <NavigationContainer>
       <userDataContext.Provider value={{userData, setuserData }}>

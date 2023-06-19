@@ -11,12 +11,13 @@ export const initialState = {
   render: false,
   visible: false,
   punchIn: false,
+  radius: 1,
   punchOut: false,
   onLeave: true,
   donePunchedIn: false,
   donePunchedOut: false,
   inTime: true,
-  message:"",
+  message: "",
   branchLocation: {
     latitude: 0,
     longitude: 0,
@@ -34,6 +35,11 @@ export const initialState = {
 
 export function locationReducer(state, action) {
   switch (action.type) {
+    case "setRadius":
+      return {
+        ...state,
+        radius: action.payload,
+      };
     case "message":
       return {
         ...state,
@@ -42,7 +48,7 @@ export function locationReducer(state, action) {
     case "hideMarker":
       return {
         ...state,
-        message:"Getting your location. Please wait",
+        message: "Getting your location. Please wait",
         showMarker: false,
       };
     case "location":
@@ -55,6 +61,9 @@ export function locationReducer(state, action) {
     case "render":
       return {
         ...state,
+        showMarker: false,
+        punchIn: false,
+        punchOut: false,
         render: !state.render,
       };
     case "hideModal":
@@ -68,6 +77,7 @@ export function locationReducer(state, action) {
         punchIn: action.payload,
       };
     case "enablePunchOut":
+      console.log("hahahaha");
       return {
         ...state,
         punchOut: action.payload,
